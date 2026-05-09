@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CritCareIQ — CC Documentation Survey</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Sora:wght@300;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#070e14;color:#d4e8f5;font-family:'DM Sans','Helvetica Neue',sans-serif;min-height:100vh;display:flex;flex-direction:column}
+
+  .header{border-bottom:1px solid #111e2b;padding:14px 28px;display:flex;align-items:center;gap:12px}
+  .dot{width:8px;height:8px;border-radius:50%;background:#2b8ec7;box-shadow:0 0 8px #2b8ec7}
+  .logo-text{font-family:'Sora',sans-serif;font-weight:700;font-size:15px}
+  .logo-text span{color:#2b8ec7}
+  .sep{color:#1a2e3e;margin:0 8px}
+  .header-sub{color:#4a6a80;font-size:13px}
+
+  .progress-wrap{background:#0a1520;border-bottom:1px solid #111e2b;padding:0 28px}
+  .progress-track{height:3px;background:#112030;border-radius:2px;overflow:hidden}
+  .progress-fill{height:100%;background:linear-gradient(90deg,#1a4a6e,#2b8ec7);border-radius:2px;transition:width .4s ease}
+  .progress-label{display:flex;justify-content:space-between;padding:8px 0 6px;font-family:'DM Mono',monospace;font-size:10px;color:#4a6a80}
+
+  .main{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+
+  .card{background:linear-gradient(145deg,#0d1821,#0a1520);border:1px solid #1a2e3e;border-radius:14px;padding:40px 44px;max-width:640px;width:100%;position:relative;overflow:hidden}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#1a4a6e,#2b8ec7)}
+
+  .q-number{font-family:'DM Mono',monospace;font-size:11px;color:#2b8ec7;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+  .q-text{font-family:'Sora',sans-serif;font-size:22px;font-weight:600;color:#d4e8f5;line-height:1.35;margin-bottom:8px}
+  .q-sub{font-size:13px;color:#4a6a80;margin-bottom:28px;line-height:1.5}
+
+  /* Options */
+  .options{display:flex;flex-direction:column;gap:10px;margin-bottom:32px}
+  .option{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;border:1px solid #1a2e3e;border-radius:10px;cursor:pointer;transition:all .2s;background:transparent}
+  .option:hover{border-color:#2b5f82;background:rgba(43,142,199,.04)}
+  .option.selected{border-color:#2b8ec7;background:rgba(43,142,199,.08)}
+  .option-key{width:26px;height:26px;border-radius:6px;border:1px solid #1a2e3e;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;color:#4a6a80;flex-shrink:0;transition:all .2s;margin-top:1px}
+  .option.selected .option-key{background:#2b8ec7;border-color:#2b8ec7;color:#fff}
+  .option-text{font-size:14px;color:#d4e8f5;line-height:1.4}
+  .option-sub{font-size:12px;color:#4a6a80;margin-top:2px}
+
+  /* Multi select hint */
+  .multi-hint{font-family:'DM Mono',monospace;font-size:10px;color:#4a6a80;margin-bottom:16px;letter-spacing:.05em}
+
+  /* Scale */
+  .scale{display:flex;gap:8px;margin-bottom:12px}
+  .scale-btn{flex:1;padding:12px 4px;border:1px solid #1a2e3e;border-radius:8px;cursor:pointer;transition:all .2s;background:transparent;text-align:center;font-family:'DM Mono',monospace;font-size:14px;color:#4a6a80}
+  .scale-btn:hover{border-color:#2b5f82;color:#7eb8d4}
+  .scale-btn.selected{border-color:#2b8ec7;background:rgba(43,142,199,.1);color:#7eb8d4}
+  .scale-labels{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:10px;color:#4a6a80;margin-bottom:32px}
+
+  /* Textarea */
+  .q-textarea{width:100%;background:#070e14;border:1px solid #1a2e3e;border-radius:10px;padding:14px 16px;color:#d4e8f5;font-family:'DM Sans',sans-serif;font-size:14px;resize:vertical;min-height:100px;outline:none;transition:border .2s;margin-bottom:32px}
+  .q-textarea:focus{border-color:#2b8ec7}
+  .q-textarea::placeholder{color:#2a3f52}
+
+  /* Nav */
+  .nav{display:flex;align-items:center;justify-content:space-between}
+  .btn-back{padding:10px 20px;border-radius:8px;border:1px solid #1a2e3e;background:transparent;color:#4a6a80;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;transition:all .2s}
+  .btn-back:hover{color:#7eb8d4;border-color:#2b5f82}
+  .btn-next{padding:11px 28px;border-radius:8px;border:none;background:linear-gradient(135deg,#1a4a6e,#2b8ec7);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px}
+  .btn-next:hover{background:linear-gradient(135deg,#1e5580,#3399d6);transform:translateY(-1px)}
+  .btn-next:disabled{opacity:.3;cursor:not-allowed;transform:none}
+  .btn-next.submit{background:linear-gradient(135deg,#065f46,#10b981)}
+  .btn-next.submit:hover{background:linear-gradient(135deg,#047857,#34d399)}
+
+  /* Intro */
+  .intro-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid #1a3a52;border-radius:20px;font-family:'DM Mono',monospace;font-size:10px;color:#7eb8d4;margin-bottom:20px}
+  .intro-badge-dot{width:5px;height:5px;border-radius:50%;background:#2b8ec7}
+  .intro-title{font-family:'Sora',sans-serif;font-size:28px;font-weight:700;color:#d4e8f5;margin-bottom:12px;line-height:1.2}
+  .intro-body{font-size:14px;color:#7eb8d4;line-height:1.6;margin-bottom:12px}
+  .intro-note{font-size:12px;color:#4a6a80;font-style:italic;margin-bottom:32px}
+  .intro-meta{display:flex;gap:20px;margin-bottom:32px}
+  .intro-meta-item{display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:11px;color:#4a6a80}
+  .intro-meta-icon{font-size:14px}
+
+  /* Thank you */
+  .ty-icon{font-size:48px;margin-bottom:20px}
+  .ty-title{font-family:'Sora',sans-serif;font-size:26px;font-weight:700;color:#d4e8f5;margin-bottom:12px}
+  .ty-body{font-size:14px;color:#7eb8d4;line-height:1.6;margin-bottom:24px}
+  .ty-results{background:#070e14;border:1px solid #1a2e3e;border-radius:10px;padding:16px 20px;margin-bottom:24px}
+  .ty-result-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #0d1821;font-size:13px}
+  .ty-result-row:last-child{border-bottom:none}
+  .ty-result-label{color:#4a6a80;font-family:'DM Mono',monospace;font-size:11px}
+  .ty-result-val{color:#7eb8d4;font-size:12px;max-width:300px;text-align:right}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  .slide-in{animation:fadeUp .35s ease both}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="dot"></div>
+  <div class="logo-text">CritCare<span>IQ</span></div>
+  <div class="sep">|</div>
+  <div class="header-sub">Critical Care Documentation — Physician Survey</div>
+</div>
+
+<div class="progress-wrap" id="progress-wrap" style="display:none">
+  <div class="progress-label">
+    <span id="progress-text">Question 1 of 7</span>
+    <span id="progress-pct">0%</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+</div>
+
+<div class="main">
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+const TOTAL = 7;
+let current = 0; // 0 = intro, 1-7 = questions, 8 = thank you
+let answers = {};
+
+const questions = [
+  // Q1
+  {
+    id: "awareness",
+    type: "scale",
+    number: "01 / 07",
+    text: "How familiar are you with the criteria for billing Critical Care (CPT 99291)?",
+    sub: "Be honest — this helps us tailor support to where it's actually needed.",
+    labels: ["Not familiar at all", "Very confident"],
+    scaleMin: 1, scaleMax: 5,
+  },
+  // Q2
+  {
+    id: "frequency",
+    type: "single",
+    number: "02 / 07",
+    text: "How often do you feel you're managing a patient who likely qualifies for Critical Care billing?",
+    sub: "Think about your average shift — sepsis, DKA, respiratory failure, altered mental status workups.",
+    options: [
+      {key:"A", text:"Rarely — fewer than 1 per shift"},
+      {key:"B", text:"Sometimes — 1 to 2 per shift"},
+      {key:"C", text:"Often — 3 or more per shift"},
+      {key:"D", text:"I'm honestly not sure what qualifies"},
+    ]
+  },
+  // Q3
+  {
+    id: "barrier",
+    type: "multi",
+    number: "03 / 07",
+    text: "What gets in the way of billing Critical Care when you think you've done it?",
+    sub: "Select all that apply — this is the most important question in the survey.",
+    options: [
+      {key:"A", text:"Time pressure", sub:"I don't have time to document it properly before moving to the next patient"},
+      {key:"B", text:"Uncertainty about criteria", sub:"I'm not always sure if my case truly meets the threshold"},
+      {key:"C", text:"Documentation friction", sub:"It takes too long to write the CC note the right way"},
+      {key:"D", text:"Time tracking", sub:"I lose track of whether I've actually hit 30 minutes"},
+      {key:"E", text:"Audit anxiety", sub:"I worry about being flagged if I bill CC too often"},
+      {key:"F", text:"Nothing — I bill it when I think it applies"},
+    ]
+  },
+  // Q4
+  {
+    id: "macros",
+    type: "single",
+    number: "04 / 07",
+    text: "Do you currently use an Epic macro or SmartPhrase for Critical Care documentation?",
+    sub: "No judgment either way — we're trying to understand what tools are actually being used.",
+    options: [
+      {key:"A", text:"Yes, I have one I use regularly"},
+      {key:"B", text:"Yes, but I rarely use it"},
+      {key:"C", text:"No, but I'd use one if it was set up for me"},
+      {key:"D", text:"No, I prefer to write my notes manually"},
+      {key:"E", text:"I don't know how to set one up"},
+    ]
+  },
+  // Q5
+  {
+    id: "helpful",
+    type: "multi",
+    number: "05 / 07",
+    text: "What would most help you bill Critical Care more accurately and consistently?",
+    sub: "Select everything that would genuinely move the needle for you.",
+    options: [
+      {key:"A", text:"A ready-to-use Epic macro", sub:"Pre-built SmartPhrase that captures time, organ systems, and attestation"},
+      {key:"B", text:"A quick reference card", sub:"One-page cheat sheet of CC criteria by diagnosis"},
+      {key:"C", text:"Case-based examples", sub:"Real de-identified cases showing what good CC documentation looks like"},
+      {key:"D", text:"Personal feedback", sub:"Monthly report showing my CC rate vs the group"},
+      {key:"E", text:"A short refresher session", sub:"30-minute group review of CC criteria and documentation"},
+      {key:"F", text:"Nothing — I feel comfortable with my current approach"},
+    ]
+  },
+  // Q6
+  {
+    id: "confidence",
+    type: "scale",
+    number: "06 / 07",
+    text: "How confident are you that your current documentation would survive a payer audit for Critical Care claims?",
+    sub: "1 = not confident at all, 5 = very confident.",
+    labels: ["Not confident", "Very confident"],
+    scaleMin: 1, scaleMax: 5,
+  },
+  // Q7
+  {
+    id: "openended",
+    type: "textarea",
+    number: "07 / 07",
+    text: "Anything else you want me to know?",
+    sub: "What's one thing that would make it easier for you to document and bill Critical Care well? Or any other feedback — this goes directly to me.",
+    placeholder: "Type your thoughts here...",
+  },
+];
+
+function render() {
+  const card = document.getElementById('card');
+  const pw = document.getElementById('progress-wrap');
+
+  if (current === 0) {
+    pw.style.display = 'none';
+    card.innerHTML = `
+      <div class="slide-in">
+        <div class="intro-badge"><div class="intro-badge-dot"></div> Mercy Fitzgerald ED · May 2026</div>
+        <div class="intro-title">Help us understand what's getting in the way.</div>
+        <div class="intro-body">
+          We've been tracking Critical Care billing rates across the group and there's a clear opportunity to improve — both for the group's revenue and for making sure you're getting credit for the complex work you're already doing.
+        </div>
+        <div class="intro-body">
+          Before we push more education, I want to understand what's actually creating the friction. This is a 3-minute survey. Your answers go directly to me and will shape what support we build next.
+        </div>
+        <div class="intro-note">— Casey</div>
+        <div class="intro-meta">
+          <div class="intro-meta-item"><span class="intro-meta-icon">⏱</span> ~3 minutes</div>
+          <div class="intro-meta-item"><span class="intro-meta-icon">🔒</span> Responses are confidential</div>
+          <div class="intro-meta-item"><span class="intro-meta-icon">📋</span> 7 questions</div>
+        </div>
+        <div class="nav" style="justify-content:flex-end">
+          <button class="btn-next" onclick="next()">Get started <span>→</span></button>
+        </div>
+      </div>`;
+    return;
+  }
+
+  if (current === TOTAL + 1) {
+    pw.style.display = 'none';
+    const barrierAns = answers["barrier"] || [];
+    const helpAns = answers["helpful"] || [];
+    const macroAns = answers["macros"] || "";
+
+    // Generate personalized recommendation
+    let rec = "We'll follow up with personalized resources based on your responses.";
+    if (barrierAns.includes("C") || barrierAns.includes("A")) {
+      rec = "We'll send you a ready-to-use Epic SmartPhrase for Critical Care documentation — should take 30 seconds to install.";
+    } else if (barrierAns.includes("B") || barrierAns.includes("D")) {
+      rec = "Look for a case-based quick reference guide in your inbox — covering the most common CC presentations by diagnosis.";
+    } else if (barrierAns.includes("E")) {
+      rec = "We'll put together a brief compliance overview to address documentation standards and audit protection.";
+    }
+
+    card.innerHTML = `
+      <div class="slide-in" style="text-align:center">
+        <div class="ty-icon">✓</div>
+        <div class="ty-title">Thanks — this is exactly what we needed.</div>
+        <div class="ty-body">Your responses will directly shape the support we build. No lectures about what you should be doing — just targeted tools matched to what's actually getting in the way.</div>
+        <div class="ty-results">
+          <div class="ty-result-row">
+            <div class="ty-result-label">Next step for you</div>
+            <div class="ty-result-val" style="color:#7eb8d4">${rec}</div>
+          </div>
+          <div class="ty-result-row">
+            <div class="ty-result-label">Group CC rate (Jan '26)</div>
+            <div class="ty-result-val" style="color:#f87171">3.86% — national benchmark is 8–10%</div>
+          </div>
+          <div class="ty-result-row">
+            <div class="ty-result-label">Est. group opportunity</div>
+            <div class="ty-result-val" style="color:#fbbf24">~$240K/year at 8% target</div>
+          </div>
+        </div>
+        <div class="ty-body" style="font-size:13px;color:#4a6a80">Questions? Reply directly to the email or catch me on shift.</div>
+      </div>`;
+    return;
+  }
+
+  // Question screens
+  pw.style.display = 'block';
+  const q = questions[current - 1];
+  const pct = Math.round((current / TOTAL) * 100);
+  document.getElementById('progress-text').textContent = `Question ${current} of ${TOTAL}`;
+  document.getElementById('progress-pct').textContent = pct + '%';
+  document.getElementById('progress-fill').style.width = pct + '%';
+
+  let body = '';
+
+  if (q.type === 'single') {
+    const sel = answers[q.id] || null;
+    body = `<div class="options">` +
+      q.options.map(o => `
+        <div class="option ${sel === o.key ? 'selected' : ''}" onclick="selectSingle('${q.id}','${o.key}')">
+          <div class="option-key">${o.key}</div>
+          <div><div class="option-text">${o.text}</div>${o.sub ? `<div class="option-sub">${o.sub}</div>` : ''}</div>
+        </div>`).join('') +
+      `</div>`;
+  }
+
+  if (q.type === 'multi') {
+    const sel = answers[q.id] || [];
+    body = `<div class="multi-hint">SELECT ALL THAT APPLY</div><div class="options">` +
+      q.options.map(o => `
+        <div class="option ${sel.includes(o.key) ? 'selected' : ''}" onclick="selectMulti('${q.id}','${o.key}')">
+          <div class="option-key">${sel.includes(o.key) ? '✓' : o.key}</div>
+          <div><div class="option-text">${o.text}</div>${o.sub ? `<div class="option-sub">${o.sub}</div>` : ''}</div>
+        </div>`).join('') +
+      `</div>`;
+  }
+
+  if (q.type === 'scale') {
+    const sel = answers[q.id] || null;
+    const btns = [];
+    for (let i = q.scaleMin; i <= q.scaleMax; i++) {
+      btns.push(`<button class="scale-btn ${sel == i ? 'selected' : ''}" onclick="selectScale('${q.id}',${i})">${i}</button>`);
+    }
+    body = `<div class="scale">${btns.join('')}</div>
+      <div class="scale-labels"><span>${q.labels[0]}</span><span>${q.labels[1]}</span></div>`;
+  }
+
+  if (q.type === 'textarea') {
+    const val = answers[q.id] || '';
+    body = `<textarea class="q-textarea" id="ta-${q.id}" placeholder="${q.placeholder}" oninput="answers['${q.id}']=this.value">${val}</textarea>`;
+  }
+
+  const canNext = canProceed(q);
+
+  card.innerHTML = `
+    <div class="slide-in">
+      <div class="q-number">${q.number}</div>
+      <div class="q-text">${q.text}</div>
+      <div class="q-sub">${q.sub}</div>
+      ${body}
+      <div class="nav">
+        <button class="btn-back" onclick="back()" ${current === 1 ? 'style="visibility:hidden"' : ''}>← Back</button>
+        <button class="btn-next ${current === TOTAL ? 'submit' : ''}" id="btn-next" onclick="next()" ${canNext ? '' : 'disabled'}>
+          ${current === TOTAL ? 'Submit ✓' : 'Next →'}
+        </button>
+      </div>
+    </div>`;
+}
+
+function canProceed(q) {
+  if (q.type === 'single') return !!answers[q.id];
+  if (q.type === 'multi') return (answers[q.id] || []).length > 0;
+  if (q.type === 'scale') return !!answers[q.id];
+  if (q.type === 'textarea') return true; // optional
+  return true;
+}
+
+function selectSingle(id, key) {
+  answers[id] = key;
+  render();
+  // Auto-advance after short delay
+  setTimeout(() => { if (canProceed(questions[current-1])) next(); }, 350);
+}
+
+function selectMulti(id, key) {
+  if (!answers[id]) answers[id] = [];
+  const idx = answers[id].indexOf(key);
+  if (idx >= 0) answers[id].splice(idx, 1);
+  else answers[id].push(key);
+  // Re-render just the options
+  render();
+}
+
+function selectScale(id, val) {
+  answers[id] = val;
+  render();
+  setTimeout(() => next(), 400);
+}
+
+function next() {
+  current++;
+  render();
+  document.getElementById('card').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function back() {
+  if (current > 0) { current--; render(); }
+}
+
+render();
+</script>
+</body>
+</html>
