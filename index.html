@@ -26,9 +26,10 @@
 
   .main{padding:24px 28px;max-width:1300px;margin:0 auto}
 
-  /* Alert banner */
   .alert{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px 16px;margin-bottom:18px;display:flex;align-items:center;gap:10px;font-size:12px;color:#fca5a5;font-family:'DM Mono',monospace}
   .alert-dot{width:6px;height:6px;border-radius:50%;background:#ef4444;flex-shrink:0}
+  .alert-green{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);color:#86efac}
+  .alert-green .alert-dot{background:#22c55e}
 
   .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
   .stat-card{background:linear-gradient(145deg,#0d1821,#0a1520);border:1px solid #1a2e3e;border-radius:10px;padding:18px 20px;position:relative;overflow:hidden}
@@ -42,14 +43,12 @@
   .charts-row{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:20px}
   .card{background:linear-gradient(145deg,#0d1821,#0a1520);border:1px solid #1a2e3e;border-radius:10px;padding:18px 20px}
 
-  /* Range filter */
   .range-row{display:flex;gap:6px;margin-bottom:14px}
   .range-btn{padding:4px 12px;border-radius:6px;border:none;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.05em;transition:all .2s;text-transform:uppercase}
   .range-btn.active{background:#1a3a52;color:#7eb8d4;border:1px solid #2b5f82}
   .range-btn.inactive{background:transparent;color:#4a6a80;border:1px solid transparent}
   .range-btn.inactive:hover{color:#7eb8d4}
 
-  /* Leaderboard */
   .leaderboard{display:flex;flex-direction:column;gap:8px}
   .lb-row{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:6px;transition:background .15s;cursor:pointer}
   .lb-row:hover{background:rgba(126,184,212,.04)}
@@ -60,7 +59,6 @@
   .lb-val{font-family:'DM Mono',monospace;font-size:11px;width:38px;text-align:right;flex-shrink:0}
   .lb-trend{font-size:10px;width:14px;flex-shrink:0}
 
-  /* Table */
   .table-card{background:linear-gradient(145deg,#0d1821,#0a1520);border:1px solid #1a2e3e;border-radius:10px;padding:18px 20px}
   .table-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
   .tabs{display:flex;gap:6px}
@@ -115,7 +113,7 @@
     <div class="group-name">Mercy Fitzgerald Hospital — O52</div>
   </div>
   <div style="display:flex;align-items:center;gap:14px">
-    <div class="month-label">Nov 2025 – Jan 2026</div>
+    <div class="month-label">Nov 2025 – Mar 2026</div>
     <div class="live-badge">REAL DATA</div>
   </div>
 </div>
@@ -123,18 +121,17 @@
 <div class="main">
 
   <!-- Alert -->
-  <div class="alert fade1">
+  <div class="alert alert-green fade1">
     <div class="alert-dot"></div>
-    Group CC rate declined from 4.84% (Nov) → 4.96% (Dec) → 3.86% (Jan). 
-    National EM benchmark is 8–10%. This group is leaving significant revenue on the table.
-    &nbsp;|&nbsp; 5 physicians billed 0 CC in January.
+    Early signal: Mar 2026 CC rate 3.6% — stabilizing after Jan low of 3.86%. Email series launched March. Several physicians showing upward movement.
+    &nbsp;|&nbsp; Group still well below 8–10% national benchmark. Continued focus needed.
   </div>
 
   <!-- KPI Row -->
   <div class="kpi-row fade1">
     <div class="stat-card" style="--accent:#f87171">
-      <div class="label">Jan Group CC Rate</div>
-      <div class="big-num">3.86<span style="font-size:16px;color:#4a6a80">%</span></div>
+      <div class="label">Mar Group CC Rate</div>
+      <div class="big-num">3.6<span style="font-size:16px;color:#4a6a80">%</span></div>
       <div class="progress-bar">
         <div class="progress-fill" id="rate-bar" style="width:0%;background:linear-gradient(90deg,#b91c1c,#f87171)"></div>
       </div>
@@ -142,7 +139,7 @@
     </div>
     <div class="stat-card" style="--accent:#f59e0b">
       <div class="label">Est. Monthly CC Revenue</div>
-      <div class="big-num" style="font-size:26px">$14.6K</div>
+      <div class="big-num" style="font-size:26px">$13.9K</div>
       <div class="sub-label" style="color:#f87171">↓ from $18.6K in Nov</div>
     </div>
     <div class="stat-card" style="--accent:#f59e0b">
@@ -171,7 +168,7 @@
       <canvas id="trendChart" height="200"></canvas>
     </div>
     <div class="card">
-      <div class="label" style="margin-bottom:12px">Jan 2026 Leaderboard</div>
+      <div class="label" style="margin-bottom:12px">Mar 2026 Leaderboard</div>
       <div class="leaderboard" id="leaderboard"></div>
     </div>
   </div>
@@ -195,11 +192,13 @@
             <th>Nov '25</th>
             <th>Dec '25</th>
             <th>Jan '26</th>
-            <th>3-Mo Avg</th>
+            <th>Feb '26</th>
+            <th>Mar '26</th>
+            <th>5-Mo Avg</th>
             <th>Trend</th>
-            <th>Jan Cases</th>
-            <th>Jan CC Billed</th>
-            <th>Est. Jan Rev</th>
+            <th>Mar Cases</th>
+            <th>Mar CC Billed</th>
+            <th>Est. Mar Rev</th>
             <th></th>
           </tr>
         </thead>
@@ -211,59 +210,65 @@
 
   <div class="footer">
     <span>CritCareIQ · Revenue est. @ $162/encounter (Medicare blended) · Mercy Fitzgerald O52 · For QI use only</span>
-    <span>Source: Practice Management Report 4.3a · Nov 2025–Jan 2026</span>
+    <span>Source: Practice Management Report 4.3a · Nov 2025–Mar 2026</span>
   </div>
 </div>
 
 <script>
 const TARGET = 8.0;
-const RATE = 162; // $/CC encounter
+const RATE = 162;
 
+// feb/mar cases from the practice management reports
 const physicians = [
-  {name:"Azer, Michele",    nov:8.6,  dec:7.6,  jan:1.9,  novCases:117, decCases:119, janCases:103},
-  {name:"Bendesky, Brad",   nov:2.3,  dec:7.4,  jan:3.6,  novCases:177, decCases:202, janCases:194},
-  {name:"Bethel, Courtney", nov:8.0,  dec:5.3,  jan:4.6,  novCases:125, decCases:170, janCases:129},
-  {name:"Bianchi, Pollianne",nov:3.2, dec:7.7,  jan:3.7,  novCases:155, decCases:182, janCases:192},
-  {name:"Canter, Danielle", nov:0.0,  dec:0.0,  jan:0.0,  novCases:13,  decCases:14,  janCases:14},
-  {name:"Casey, Gregory",   nov:7.7,  dec:6.1,  jan:9.2,  novCases:182, decCases:165, janCases:164},
-  {name:"Disandro, Daniel", nov:2.0,  dec:1.5,  jan:0.0,  novCases:151, decCases:196, janCases:194},
-  {name:"Dollard, Denis",   nov:1.5,  dec:3.6,  jan:6.5,  novCases:134, decCases:110, janCases:123},
-  {name:"Gejer, Wendymarie",nov:8.7,  dec:4.0,  jan:6.1,  novCases:115, decCases:100, janCases:114},
-  {name:"Hand, Steven",     nov:7.1,  dec:3.0,  jan:4.3,  novCases:168, decCases:166, janCases:164},
-  {name:"Jain, Sechin",     nov:7.0,  dec:7.9,  jan:5.3,  novCases:86,  decCases:38,  janCases:57},
-  {name:"Krass, Samuel",    nov:1.4,  dec:7.8,  jan:2.1,  novCases:71,  decCases:51,  janCases:48},
-  {name:"Kulp, Kari",       nov:0.0,  dec:11.1, jan:2.6,  novCases:24,  decCases:27,  janCases:38},
-  {name:"Lehman, Curtis",   nov:6.5,  dec:5.5,  jan:5.5,  novCases:229, decCases:271, janCases:272},
-  {name:"Lutz, Ronald",     nov:7.1,  dec:7.5,  jan:5.1,  novCases:182, decCases:173, janCases:175},
-  {name:"Makopoulos, John", nov:0.5,  dec:1.0,  jan:0.9,  novCases:189, decCases:209, janCases:212},
-  {name:"Yoon, Russell",    nov:1.1,  dec:1.6,  jan:0.0,  novCases:93,  decCases:126, janCases:138},
+  {name:"Azer, Michele",     nov:8.6,  dec:7.6,  jan:1.9,  feb:2.3,  mar:4.7,  novCases:117, decCases:119, janCases:103, febCases:129, marCases:107},
+  {name:"Bendesky, Brad",    nov:2.3,  dec:7.4,  jan:3.6,  feb:2.1,  mar:5.4,  novCases:177, decCases:202, janCases:194, febCases:189, marCases:203},
+  {name:"Bethel, Courtney",  nov:8.0,  dec:5.3,  jan:4.6,  feb:4.7,  mar:7.5,  novCases:125, decCases:170, janCases:129, febCases:143, marCases:199},
+  {name:"Bianchi, Pollianne",nov:3.2,  dec:7.7,  jan:3.7,  feb:3.6,  mar:5.3,  novCases:155, decCases:182, janCases:192, febCases:206, marCases:209},
+  {name:"Canter, Danielle",  nov:0.0,  dec:0.0,  jan:0.0,  feb:23.5, mar:4.2,  novCases:13,  decCases:14,  janCases:14,  febCases:17,  marCases:17},
+  {name:"Casey, Gregory",    nov:7.7,  dec:6.1,  jan:9.2,  feb:7.1,  mar:9.4,  novCases:182, decCases:165, janCases:164, febCases:154, marCases:212},
+  {name:"Disandro, Daniel",  nov:2.0,  dec:1.5,  jan:0.0,  feb:0.6,  mar:3.1,  novCases:151, decCases:196, janCases:194, febCases:156, marCases:159},
+  {name:"Dollard, Denis",    nov:1.5,  dec:3.6,  jan:6.5,  feb:4.0,  mar:3.2,  novCases:134, decCases:110, janCases:123, febCases:126, marCases:125},
+  {name:"Gejer, Wendymarie", nov:8.7,  dec:4.0,  jan:6.1,  feb:5.1,  mar:4.1,  novCases:115, decCases:100, janCases:114, febCases:98,  marCases:122},
+  {name:"Hand, Steven",      nov:7.1,  dec:3.0,  jan:4.3,  feb:3.2,  mar:7.1,  novCases:168, decCases:166, janCases:164, febCases:190, marCases:170},
+  {name:"Jain, Sechin",      nov:7.0,  dec:7.9,  jan:5.3,  feb:12.5, mar:8.2,  novCases:86,  decCases:38,  janCases:57,  febCases:24,  marCases:61},
+  {name:"Kleinberg, Christopher", nov:null, dec:null, jan:null, feb:10.3, mar:6.7, novCases:0, decCases:0, janCases:0, febCases:29, marCases:75},
+  {name:"Krass, Samuel",     nov:1.4,  dec:7.8,  jan:2.1,  feb:5.4,  mar:5.8,  novCases:71,  decCases:51,  janCases:48,  febCases:92,  marCases:104},
+  {name:"Kulp, Kari",        nov:0.0,  dec:11.1, jan:2.6,  feb:3.6,  mar:4.2,  novCases:24,  decCases:27,  janCases:38,  febCases:28,  marCases:24},
+  {name:"Lehman, Curtis",    nov:6.5,  dec:5.5,  jan:5.5,  feb:5.7,  mar:5.0,  novCases:229, decCases:271, janCases:272, febCases:230, marCases:202},
+  {name:"Lutz, Ronald",      nov:7.1,  dec:7.5,  jan:5.1,  feb:6.8,  mar:4.1,  novCases:182, decCases:173, janCases:175, febCases:176, marCases:218},
+  {name:"Makopoulos, John",  nov:0.5,  dec:1.0,  jan:0.9,  feb:2.3,  mar:2.2,  novCases:189, decCases:209, janCases:212, febCases:215, marCases:223},
+  {name:"Yoon, Russell",     nov:1.1,  dec:1.6,  jan:0.0,  feb:0.0,  mar:1.5,  novCases:93,  decCases:126, janCases:138, febCases:138, marCases:130},
 ];
 
-// Derived fields
+// Derived fields — avg excludes nulls, uses mar as "latest"
 physicians.forEach(p => {
-  p.avg = +((p.nov + p.dec + p.jan) / 3).toFixed(2);
-  p.janCC = Math.round(p.janCases * p.jan / 100);
-  p.janRev = p.janCC * RATE;
-  p.trendDir = p.jan > p.nov ? "up" : p.jan < p.nov ? "down" : "flat";
-  if (p.jan === 0 && p.dec === 0 && p.nov === 0) p.status = "zero";
-  else if (p.jan >= TARGET) p.status = "above";
-  else if (p.jan >= 5) p.status = "below";
+  const vals = [p.nov, p.dec, p.jan, p.feb, p.mar].filter(v => v !== null);
+  p.avg = +(vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(2);
+  p.marCC = Math.round(p.marCases * p.mar / 100);
+  p.marRev = p.marCC * RATE;
+  // trend: compare mar to earliest available
+  const first = [p.nov, p.dec, p.jan].find(v => v !== null) ?? p.feb;
+  p.trendDir = p.mar > first ? "up" : p.mar < first ? "down" : "flat";
+  // status based on mar
+  if (p.mar === 0 && p.feb === 0 && (p.jan === 0 || p.jan === null)) p.status = "zero";
+  else if (p.mar >= TARGET) p.status = "above";
+  else if (p.mar >= 5) p.status = "below";
   else p.status = "concern";
 });
 
-// ── Progress bar ──
+// Progress bar
 setTimeout(() => {
-  document.getElementById('rate-bar').style.width = Math.round((3.86/10)*100) + '%';
+  document.getElementById('rate-bar').style.width = Math.round((3.6/10)*100) + '%';
 }, 300);
 
-// ── Leaderboard ──
+// Leaderboard — sorted by Mar
 function renderLeaderboard() {
-  const sorted = [...physicians].sort((a,b) => b.jan - a.jan);
-  const max = sorted[0].jan || 1;
+  const sorted = [...physicians].sort((a,b) => b.mar - a.mar);
+  const max = sorted[0].mar || 1;
   const lb = document.getElementById('leaderboard');
   lb.innerHTML = '';
   sorted.forEach((p, i) => {
-    const color = p.jan >= TARGET ? '#4ade80' : p.jan >= 5 ? '#fbbf24' : p.jan > 0 ? '#f87171' : '#374151';
+    const color = p.mar >= TARGET ? '#4ade80' : p.mar >= 5 ? '#fbbf24' : p.mar > 0 ? '#f87171' : '#374151';
     const trendIcon = p.trendDir === 'up' ? '↑' : p.trendDir === 'down' ? '↓' : '→';
     const trendColor = p.trendDir === 'up' ? '#4ade80' : p.trendDir === 'down' ? '#f87171' : '#4a6a80';
     const shortName = p.name.split(',')[0];
@@ -271,20 +276,20 @@ function renderLeaderboard() {
       <div class="lb-row" onclick="selectPhysician('${p.name}')">
         <div class="lb-rank">${i+1}</div>
         <div class="lb-name">${shortName}</div>
-        <div class="lb-bar-wrap"><div class="lb-bar" style="width:${(p.jan/max)*100}%;background:${color}"></div></div>
-        <div class="lb-val" style="color:${color}">${p.jan.toFixed(1)}%</div>
+        <div class="lb-bar-wrap"><div class="lb-bar" style="width:${(p.mar/max)*100}%;background:${color}"></div></div>
+        <div class="lb-val" style="color:${color}">${p.mar.toFixed(1)}%</div>
         <div class="lb-trend" style="color:${trendColor}">${trendIcon}</div>
       </div>`;
   });
 }
 renderLeaderboard();
 
-// ── Trend Chart ──
+// Trend Chart
 const COLORS = [
   '#2b8ec7','#4ade80','#f59e0b','#a78bfa','#f87171',
   '#34d399','#fb923c','#60a5fa','#e879f9','#facc15',
   '#94a3b8','#f43f5e','#10b981','#6366f1','#84cc16',
-  '#0ea5e9','#d946ef'
+  '#0ea5e9','#d946ef','#fbbf24'
 ];
 
 let chartInstance = null;
@@ -295,16 +300,28 @@ function buildChartDatasets(mode) {
   if (mode === 'top') list = [...physicians].sort((a,b) => b.avg - a.avg).slice(0,5);
   if (mode === 'bottom') list = [...physicians].filter(p => p.avg < 4).sort((a,b) => a.avg - b.avg);
 
-  return list.map((p, i) => ({
-    label: p.name.split(',')[0],
-    data: [p.nov, p.dec, p.jan],
-    borderColor: COLORS[physicians.indexOf(p) % COLORS.length],
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    pointRadius: 3,
-    pointHoverRadius: 5,
-    tension: 0.3,
-  }));
+  return list.map((p) => {
+    const idx = physicians.indexOf(p);
+    // build data points — null means skip that month
+    const data = [
+      p.nov !== null ? p.nov : null,
+      p.dec !== null ? p.dec : null,
+      p.jan !== null ? p.jan : null,
+      p.feb,
+      p.mar
+    ];
+    return {
+      label: p.name.split(',')[0],
+      data,
+      borderColor: COLORS[idx % COLORS.length],
+      backgroundColor: 'transparent',
+      borderWidth: 1.5,
+      pointRadius: 3,
+      pointHoverRadius: 5,
+      tension: 0.3,
+      spanGaps: true,
+    };
+  });
 }
 
 function initChart(mode) {
@@ -313,7 +330,7 @@ function initChart(mode) {
   chartInstance = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: ["Nov '25", "Dec '25", "Jan '26"],
+      labels: ["Nov '25", "Dec '25", "Jan '26", "Feb '26", "Mar '26"],
       datasets: buildChartDatasets(mode)
     },
     options: {
@@ -338,9 +355,8 @@ function initChart(mode) {
           bodyColor: '#d4e8f5',
           titleFont: {family:"'DM Mono', monospace", size:10},
           bodyFont: {family:"'DM Mono', monospace", size:11},
-          callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toFixed(1)}%` }
-        },
-        annotation: {}
+          callbacks: { label: c => c.parsed.y !== null ? ` ${c.dataset.label}: ${c.parsed.y.toFixed(1)}%` : '' }
+        }
       },
       scales: {
         x: {
@@ -352,7 +368,7 @@ function initChart(mode) {
           grid: {color:'#112030'},
           ticks: {color:'#4a6a80', font:{family:"'DM Mono', monospace", size:10}, callback: v => v+'%'},
           border: {display:false},
-          min: 0, max: 13
+          min: 0, max: 15
         }
       }
     }
@@ -363,23 +379,27 @@ initChart('all');
 function setChartMode(mode) {
   chartMode = mode;
   document.querySelectorAll('.range-btn').forEach(b => {
-    b.className = 'range-btn ' + (b.textContent.toLowerCase().replace(' ','') === mode || (mode==='top'&&b.textContent==='Top 5') || (mode==='bottom'&&b.textContent==='Needs Attn') || (mode==='all'&&b.textContent==='All') ? 'active' : 'inactive');
+    const matches = (mode==='all'&&b.textContent==='All')||(mode==='top'&&b.textContent==='Top 5')||(mode==='bottom'&&b.textContent==='Needs Attn');
+    b.className = 'range-btn ' + (matches ? 'active' : 'inactive');
   });
   initChart(mode);
 }
 
-// ── Spark ──
-function sparkSVG(nov, dec, jan, color) {
-  const vals = [nov, dec, jan];
-  const min = 0, max = 12, w = 50, h = 20;
-  const pts = vals.map((v,i) => `${i*(w/2)},${h - ((v-min)/(max-min))*h}`).join(' ');
+// Spark — now 5 points
+function sparkSVG(nov, dec, jan, feb, mar, color) {
+  const vals = [nov, dec, jan, feb, mar];
+  const min = 0, max = 15, w = 60, h = 20;
+  const validVals = vals.map((v,i) => v !== null ? {i, v} : null).filter(Boolean);
+  if (validVals.length < 2) return '';
+  const pts = validVals.map(({i, v}) => `${i*(w/4)},${h - ((v-min)/(max-min))*h}`).join(' ');
+  const lastValid = validVals[validVals.length-1];
   return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
     <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="${w}" cy="${h - ((jan-min)/(max-min))*h}" r="2.5" fill="${color}"/>
+    <circle cx="${lastValid.i*(w/4)}" cy="${h - ((lastValid.v-min)/(max-min))*h}" r="2.5" fill="${color}"/>
   </svg>`;
 }
 
-// ── Table ──
+// Table
 let currentTab = 'all';
 let selectedName = null;
 
@@ -400,62 +420,59 @@ function selectPhysician(name) {
   }
 }
 
+function fmtPct(v) {
+  if (v === null) return '<span style="color:#2a3f52">—</span>';
+  return v.toFixed(1) + '%';
+}
+
 function renderTable() {
-  const sorted = [...physicians].sort((a,b) => b.jan - a.jan);
+  const sorted = [...physicians].sort((a,b) => b.mar - a.mar);
   let list = sorted;
   if (currentTab === 'concern') list = sorted.filter(p => p.status === 'concern' || p.status === 'zero');
-  if (currentTab === 'strong') list = sorted.filter(p => p.status === 'above' || (p.avg >= 5));
+  if (currentTab === 'strong') list = sorted.filter(p => p.status === 'above' || p.avg >= 5);
 
   const tbody = document.getElementById('physician-tbody');
   tbody.innerHTML = '';
 
   list.forEach(p => {
-    const delta = (p.jan - TARGET).toFixed(1);
-    const deltaStr = (delta >= 0 ? '+' : '') + delta + '%';
-
-    let pillHtml, statusColor;
+    let pillHtml;
     if (p.status === 'above') {
       pillHtml = `<span class="pill pill-above">↑ Above</span>`;
-      statusColor = '#4ade80';
     } else if (p.status === 'zero') {
       pillHtml = `<span class="pill pill-zero">— Zero</span>`;
-      statusColor = '#6b7280';
     } else if (p.status === 'concern') {
       pillHtml = `<span class="pill pill-below">⚠ Critical</span>`;
-      statusColor = '#f87171';
     } else {
       pillHtml = `<span class="pill pill-below">↓ Below</span>`;
-      statusColor = '#fbbf24';
     }
 
+    const col = v => v === null ? '#2a3f52' : v >= TARGET ? '#4ade80' : v >= 5 ? '#fbbf24' : v > 0 ? '#f87171' : '#374151';
     const sparkColor = p.trendDir === 'up' ? '#4ade80' : p.trendDir === 'down' ? '#f87171' : '#4a6a80';
-    const spark = sparkSVG(p.nov, p.dec, p.jan, sparkColor);
+    const spark = sparkSVG(p.nov, p.dec, p.jan, p.feb, p.mar, sparkColor);
 
     const trendStr = p.trendDir === 'up'
-      ? `<span style="color:#4ade80">↑ ${(p.jan-p.nov).toFixed(1)}%</span>`
+      ? `<span style="color:#4ade80">↑ ${(p.mar - ([p.nov,p.dec,p.jan].find(v=>v!==null)??p.feb)).toFixed(1)}%</span>`
       : p.trendDir === 'down'
-      ? `<span style="color:#f87171">↓ ${Math.abs(p.jan-p.nov).toFixed(1)}%</span>`
+      ? `<span style="color:#f87171">↓ ${Math.abs(p.mar - ([p.nov,p.dec,p.jan].find(v=>v!==null)??p.feb)).toFixed(1)}%</span>`
       : `<span style="color:#4a6a80">→</span>`;
 
     const edu = (p.status !== 'above') ? `<span class="edu-tag">→ Needs education</span>` : '';
-
-    const novColor = p.nov >= TARGET ? '#4ade80' : p.nov >= 5 ? '#fbbf24' : '#f87171';
-    const decColor = p.dec >= TARGET ? '#4ade80' : p.dec >= 5 ? '#fbbf24' : '#f87171';
-    const janColor = p.jan >= TARGET ? '#4ade80' : p.jan >= 5 ? '#fbbf24' : '#f87171';
 
     const tr = document.createElement('tr');
     if (p.name === selectedName) tr.classList.add('selected');
     tr.innerHTML = `
       <td style="color:#d4e8f5;font-weight:500">${p.name}</td>
       <td>${pillHtml}</td>
-      <td style="font-family:'DM Mono',monospace;color:${novColor}">${p.nov.toFixed(1)}%</td>
-      <td style="font-family:'DM Mono',monospace;color:${decColor}">${p.dec.toFixed(1)}%</td>
-      <td style="font-family:'DM Mono',monospace;color:${janColor};font-weight:600">${p.jan.toFixed(1)}%</td>
+      <td style="font-family:'DM Mono',monospace;color:${col(p.nov)}">${fmtPct(p.nov)}</td>
+      <td style="font-family:'DM Mono',monospace;color:${col(p.dec)}">${fmtPct(p.dec)}</td>
+      <td style="font-family:'DM Mono',monospace;color:${col(p.jan)}">${fmtPct(p.jan)}</td>
+      <td style="font-family:'DM Mono',monospace;color:${col(p.feb)}">${fmtPct(p.feb)}</td>
+      <td style="font-family:'DM Mono',monospace;color:${col(p.mar)};font-weight:600">${fmtPct(p.mar)}</td>
       <td style="font-family:'DM Mono',monospace;color:#7eb8d4">${p.avg.toFixed(1)}%</td>
       <td>${spark} <span style="font-family:'DM Mono',monospace;font-size:10px">${trendStr}</span></td>
-      <td style="font-family:'DM Mono',monospace;color:#7eb8d4">${p.janCases}</td>
-      <td style="font-family:'DM Mono',monospace;color:#7eb8d4">${p.janCC}</td>
-      <td style="font-family:'DM Mono',monospace;color:#d4e8f5">$${p.janRev.toLocaleString()}</td>
+      <td style="font-family:'DM Mono',monospace;color:#7eb8d4">${p.marCases}</td>
+      <td style="font-family:'DM Mono',monospace;color:#7eb8d4">${p.marCC}</td>
+      <td style="font-family:'DM Mono',monospace;color:#d4e8f5">$${p.marRev.toLocaleString()}</td>
       <td>${edu}</td>`;
     tr.addEventListener('click', () => selectPhysician(p.name));
     tbody.appendChild(tr);
@@ -470,8 +487,8 @@ function renderDetail() {
   const p = physicians.find(x => x.name === selectedName);
   if (!p) return;
 
-  const gap = Math.max(0, TARGET - p.jan);
-  const annOpp = Math.round((gap / 100) * p.janCases * 12 * RATE);
+  const gap = Math.max(0, TARGET - p.mar);
+  const annOpp = Math.round((gap / 100) * p.marCases * 12 * RATE);
 
   const oppBlock = p.status !== 'above' ? `
     <div>
@@ -479,25 +496,24 @@ function renderDetail() {
       <div class="opp-val">${annOpp > 0 ? '$' + annOpp.toLocaleString() : 'At target'}</div>
     </div>` : `<div><div class="opp-label">Status</div><div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:#4ade80;text-align:right">Above Target ✓</div></div>`;
 
-  // Personalized education recommendations
   let mods = [];
-  if (p.jan < 3)  mods = ['Critical Care Fundamentals', 'Sepsis Documentation', '30-Min CC Threshold'];
-  else if (p.jan < 6) mods = ['BiPAP / NIV Time Documentation', 'DKA Management CC Criteria', 'GI Bleed CC Module'];
-  else if (p.jan < TARGET) mods = ['Hyperkalemia CC Billing', 'CC Time Documentation Tips', 'Sepsis Advanced Module'];
+  if (p.mar < 3)  mods = ['Critical Care Fundamentals', 'Sepsis Documentation', '30-Min CC Threshold'];
+  else if (p.mar < 6) mods = ['BiPAP / NIV Time Documentation', 'DKA Management CC Criteria', 'GI Bleed CC Module'];
+  else if (p.mar < TARGET) mods = ['Hyperkalemia CC Billing', 'CC Time Documentation Tips', 'Sepsis Advanced Module'];
 
   const modBlock = mods.length ? `
     <div class="modules">${mods.map(m => `<div class="module-tag">📚 ${m}</div>`).join('')}</div>` : '';
 
-  // Mini trend
-  const trend3 = `Nov: ${p.nov.toFixed(1)}% → Dec: ${p.dec.toFixed(1)}% → Jan: ${p.jan.toFixed(1)}%`;
+  const novStr = p.nov !== null ? p.nov.toFixed(1)+'%' : '—';
+  const trend5 = `Nov: ${novStr} → Dec: ${p.dec !== null ? p.dec.toFixed(1)+'%' : '—'} → Jan: ${p.jan !== null ? p.jan.toFixed(1)+'%' : '—'} → Feb: ${p.feb.toFixed(1)}% → Mar: ${p.mar.toFixed(1)}%`;
   const trendColor = p.trendDir === 'up' ? '#4ade80' : p.trendDir === 'down' ? '#f87171' : '#4a6a80';
 
   panel.innerHTML = `
     <div class="detail-top">
       <div>
         <div class="detail-name">${p.name}</div>
-        <div class="detail-meta">${p.janCases} Jan cases &nbsp;·&nbsp; ${p.janCC} CC billed &nbsp;·&nbsp; $${p.janRev.toLocaleString()} est. Jan revenue</div>
-        <div style="margin-top:6px;font-family:'DM Mono',monospace;font-size:10px;color:${trendColor}">${trend3}</div>
+        <div class="detail-meta">${p.marCases} Mar cases &nbsp;·&nbsp; ${p.marCC} CC billed &nbsp;·&nbsp; $${p.marRev.toLocaleString()} est. Mar revenue</div>
+        <div style="margin-top:6px;font-family:'DM Mono',monospace;font-size:10px;color:${trendColor}">${trend5}</div>
       </div>
       ${oppBlock}
     </div>
