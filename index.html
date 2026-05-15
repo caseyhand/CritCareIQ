@@ -1,527 +1,713 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CritCareIQ — Mercy Fitzgerald ED</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Sora:wght@300;600;700&display=swap" rel="stylesheet">
-<style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#070e14;color:#d4e8f5;font-family:'DM Sans','Helvetica Neue',sans-serif;min-height:100vh}
-  ::-webkit-scrollbar{width:4px;height:4px}
-  ::-webkit-scrollbar-track{background:#070e14}
-  ::-webkit-scrollbar-thumb{background:#1a2e3e;border-radius:2px}
+import { useState } from "react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer, Legend } from "recharts";
 
-  .header{border-bottom:1px solid #111e2b;padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
-  .logo{display:flex;align-items:center;gap:12px}
-  .dot{width:8px;height:8px;border-radius:50%;background:#2b8ec7;box-shadow:0 0 8px #2b8ec7;animation:pulse 2s infinite}
-  @keyframes pulse{0%,100%{box-shadow:0 0 8px #2b8ec7}50%{box-shadow:0 0 16px #2b8ec7,0 0 4px #2b8ec7}}
-  .logo-text{font-family:'Sora',sans-serif;font-weight:700;font-size:15px;letter-spacing:.02em}
-  .logo-text span{color:#2b8ec7}
-  .group-name{color:#4a6a80;font-size:13px}
-  .sep{color:#1a2e3e;font-size:14px;margin:0 8px}
-  .live-badge{padding:4px 12px;border:1px solid #1a2e3e;border-radius:6px;font-size:11px;color:#7eb8d4;font-family:'DM Mono',monospace}
-  .month-label{font-family:'DM Mono',monospace;font-size:11px;color:#4a6a80}
+const BENCHMARK = 8;
 
-  .main{padding:24px 28px;max-width:1300px;margin:0 auto}
+const MONTHS = ["Nov '25", "Dec '25", "Jan '26", "Feb '26", "Mar '26", "Apr '26"];
+const MONTH_KEYS = ["nov25", "dec25", "jan26", "feb26", "mar26", "apr26"];
 
-  .alert{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px 16px;margin-bottom:18px;display:flex;align-items:center;gap:10px;font-size:12px;color:#fca5a5;font-family:'DM Mono',monospace}
-  .alert-dot{width:6px;height:6px;border-radius:50%;background:#ef4444;flex-shrink:0}
-  .alert-green{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);color:#86efac}
-  .alert-green .alert-dot{background:#22c55e}
+// Apr 2026 is partial — 73.89% billed
+const APR_PARTIAL = true;
+const APR_PCT = 73.89;
 
-  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
-  .stat-card{background:linear-gradient(145deg,#0d1821,#0a1520);border:1px solid #1a2e3e;border-radius:10px;padding:18px 20px;position:relative;overflow:hidden}
-  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent,#2b8ec7)}
-  .label{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.1em;color:#4a6a80;text-transform:uppercase;margin-bottom:6px}
-  .big-num{font-family:'Sora',sans-serif;font-weight:700;font-size:32px;line-height:1;color:#d4e8f5}
-  .sub-label{margin-top:8px;font-family:'DM Mono',monospace;font-size:10px}
-  .progress-bar{height:5px;background:#112030;border-radius:3px;overflow:hidden;margin-top:8px}
-  .progress-fill{height:100%;border-radius:3px;transition:width 1s ease}
+// Group physician-only CC rates (from Volume Group - Physicians row)
+const GROUP_RATES = {
+  nov25: 4.9,
+  dec25: 4.8,
+  jan26: 3.8,
+  feb26: 4.4,
+  mar26: 5.2,
+  apr26: 5.2,
+};
 
-  .charts-row{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:20px}
-  .card{background:linear-gradient(145deg,#0d1821,#0a1520);border:1px solid #1a2e3e;border-radius:10px;padding:18px 20px}
+const PHYSICIANS = [
+  {
+    name: "Azer, Michele",
+    nov25: 9.4, dec25: 7.6, jan26: 1.9, feb26: 2.3, mar26: 4.7, apr26: 3.2,
+    cases: { nov25: 117, dec25: 119, jan26: 103, feb26: 129, mar26: 107, apr26: 93 },
+  },
+  {
+    name: "Bendesky, Brad",
+    nov25: 2.3, dec25: 7.4, jan26: 3.6, feb26: 2.1, mar26: 5.4, apr26: 7.5,
+    cases: { nov25: 177, dec25: 202, jan26: 194, feb26: 189, mar26: 203, apr26: 161 },
+  },
+  {
+    name: "Bethel, Courtney",
+    nov25: 8.0, dec25: 5.3, jan26: 4.7, feb26: 9.1, mar26: 7.5, apr26: 4.8,
+    cases: { nov25: 125, dec25: 170, jan26: 129, feb26: 143, mar26: 199, apr26: 126 },
+  },
+  {
+    name: "Bianchi, Pollianne",
+    nov25: 3.2, dec25: 7.7, jan26: 3.6, feb26: 4.4, mar26: 5.3, apr26: 10.3,
+    cases: { nov25: 155, dec25: 182, jan26: 192, feb26: 206, mar26: 209, apr26: 97 },
+  },
+  {
+    name: "Canter, Danielle",
+    nov25: 0, dec25: 0, jan26: 0, feb26: 23.5, mar26: 23.5, apr26: 0,
+    cases: { nov25: 13, dec25: 14, jan26: 14, feb26: 17, mar26: 17, apr26: 17 },
+    note: "Low volume — rates volatile",
+  },
+  {
+    name: "Casey, Gregory",
+    nov25: 7.7, dec25: 6.1, jan26: 9.1, feb26: 7.1, mar26: 9.4, apr26: 16.0,
+    cases: { nov25: 182, dec25: 165, jan26: 164, feb26: 154, mar26: 212, apr26: 25 },
+  },
+  {
+    name: "Disandro, Daniel",
+    nov25: 2.0, dec25: 1.5, jan26: 0.5, feb26: 0.6, mar26: 3.1, apr26: 0.9,
+    cases: { nov25: 151, dec25: 196, jan26: 194, feb26: 156, mar26: 159, apr26: 111 },
+  },
+  {
+    name: "Dollard, Denis",
+    nov25: 1.5, dec25: 3.6, jan26: 6.5, feb26: 4.0, mar26: 3.2, apr26: 2.4,
+    cases: { nov25: 134, dec25: 110, jan26: 123, feb26: 126, mar26: 125, apr26: 84 },
+  },
+  {
+    name: "Gejer, Wendymarie",
+    nov25: 8.7, dec25: 4.0, jan26: 6.1, feb26: 5.1, mar26: 4.1, apr26: 5.6,
+    cases: { nov25: 115, dec25: 100, jan26: 114, feb26: 98, mar26: 122, apr26: 90 },
+  },
+  {
+    name: "Hand, Steven",
+    nov25: 7.1, dec25: 3.0, jan26: 4.3, feb26: 3.2, mar26: 7.1, apr26: 6.1,
+    cases: { nov25: 168, dec25: 166, jan26: 164, feb26: 190, mar26: 170, apr26: 131 },
+  },
+  {
+    name: "Jain, Sechin",
+    nov25: 7.0, dec25: 7.9, jan26: 5.3, feb26: 12.5, mar26: 8.2, apr26: 6.8,
+    cases: { nov25: 86, dec25: 38, jan26: 57, feb26: 24, mar26: 61, apr26: 44 },
+  },
+  {
+    name: "Kleinberg, Christopher",
+    nov25: null, dec25: null, jan26: null, feb26: 10.3, mar26: 6.7, apr26: 8.3,
+    cases: { nov25: null, dec25: null, jan26: null, feb26: 29, mar26: 75, apr26: 48 },
+  },
+  {
+    name: "Krass, Samuel",
+    nov25: 1.4, dec25: 7.8, jan26: 2.1, feb26: 5.4, mar26: 5.8, apr26: 6.7,
+    cases: { nov25: 71, dec25: 51, jan26: 48, feb26: 92, mar26: 104, apr26: 90 },
+  },
+  {
+    name: "Kulp, Kari",
+    nov25: 0, dec25: 11.1, jan26: 2.6, feb26: 3.6, mar26: 4.2, apr26: 4.2,
+    cases: { nov25: 24, dec25: 27, jan26: 38, feb26: 28, mar26: 24, apr26: 24 },
+    note: "Low volume — rates volatile",
+  },
+  {
+    name: "Lehman, Curtis",
+    nov25: 6.1, dec25: 5.2, jan26: 5.5, feb26: 5.7, mar26: 5.0, apr26: 4.6,
+    cases: { nov25: 229, dec25: 271, jan26: 272, feb26: 230, mar26: 202, apr26: 153 },
+  },
+  {
+    name: "Lutz, Ronald",
+    nov25: 7.1, dec25: 7.5, jan26: 5.1, feb26: 6.8, mar26: 4.1, apr26: 3.3,
+    cases: { nov25: 182, dec25: 173, jan26: 175, feb26: 176, mar26: 218, apr26: 121 },
+  },
+  {
+    name: "Makopoulos, John",
+    nov25: 0.5, dec25: 1.0, jan26: 0.9, feb26: 2.3, mar26: 2.2, apr26: 1.1,
+    cases: { nov25: 189, dec25: 209, jan26: 212, feb26: 215, mar26: 223, apr26: 177 },
+  },
+  {
+    name: "Urban, Colleen",
+    nov25: null, dec25: null, jan26: null, feb26: null, mar26: null, apr26: 6.4,
+    cases: { nov25: null, dec25: null, jan26: null, feb26: null, mar26: null, apr26: 110 },
+  },
+  {
+    name: "Yoon, Russell",
+    nov25: 1.1, dec25: 0.8, jan26: 0.7, feb26: 0, mar26: 1.5, apr26: 7.5,
+    cases: { nov25: 93, dec25: 126, jan26: 138, feb26: 128, mar26: 130, apr26: 106 },
+  },
+];
 
-  .range-row{display:flex;gap:6px;margin-bottom:14px}
-  .range-btn{padding:4px 12px;border-radius:6px;border:none;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.05em;transition:all .2s;text-transform:uppercase}
-  .range-btn.active{background:#1a3a52;color:#7eb8d4;border:1px solid #2b5f82}
-  .range-btn.inactive{background:transparent;color:#4a6a80;border:1px solid transparent}
-  .range-btn.inactive:hover{color:#7eb8d4}
+function getStatus(md) {
+  const rates = MONTH_KEYS.map(k => md[k]).filter(v => v !== null);
+  const avg = rates.reduce((a, b) => a + b, 0) / rates.length;
+  if (avg >= BENCHMARK) return "strong";
+  if (avg >= 5) return "watch";
+  return "needs";
+}
 
-  .leaderboard{display:flex;flex-direction:column;gap:8px}
-  .lb-row{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:6px;transition:background .15s;cursor:pointer}
-  .lb-row:hover{background:rgba(126,184,212,.04)}
-  .lb-rank{font-family:'Sora',sans-serif;font-size:11px;font-weight:700;color:#4a6a80;width:18px;text-align:center;flex-shrink:0}
-  .lb-name{font-size:12px;color:#d4e8f5;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .lb-bar-wrap{width:80px;height:5px;background:#112030;border-radius:3px;overflow:hidden;flex-shrink:0}
-  .lb-bar{height:100%;border-radius:3px}
-  .lb-val{font-family:'DM Mono',monospace;font-size:11px;width:38px;text-align:right;flex-shrink:0}
-  .lb-trend{font-size:10px;width:14px;flex-shrink:0}
+function getTrend(md) {
+  const recent = [md.jan26, md.feb26, md.mar26].filter(v => v !== null);
+  if (recent.length < 2) return "flat";
+  const delta = recent[recent.length - 1] - recent[0];
+  if (delta > 1.5) return "up";
+  if (delta < -1.5) return "down";
+  return "flat";
+}
 
-  .table-card{background:linear-gradient(145deg,#0d1821,#0a1520);border:1px solid #1a2e3e;border-radius:10px;padding:18px 20px}
-  .table-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-  .tabs{display:flex;gap:6px}
-  .tab{padding:5px 14px;border-radius:6px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;transition:all .2s}
-  .tab.active{background:#1a3a52;color:#7eb8d4}
-  .tab.inactive{background:transparent;color:#4a6a80}
-  .tab.inactive:hover{color:#7eb8d4}
+function getAvg(md, excludeApr = false) {
+  const keys = excludeApr ? MONTH_KEYS.slice(0, 5) : MONTH_KEYS;
+  const rates = keys.map(k => md[k]).filter(v => v !== null);
+  if (!rates.length) return null;
+  return (rates.reduce((a, b) => a + b, 0) / rates.length).toFixed(1);
+}
 
-  table{width:100%;border-collapse:collapse}
-  thead th{padding:7px 10px;text-align:left;font-family:'DM Mono',monospace;font-size:9px;color:#4a6a80;letter-spacing:.1em;text-transform:uppercase;font-weight:400;border-bottom:1px solid #112030;white-space:nowrap}
-  tbody tr{border-bottom:1px solid #0a1520;cursor:pointer;transition:background .15s}
-  tbody tr:hover{background:rgba(126,184,212,.04)}
-  tbody tr.selected{background:rgba(43,142,199,.07)!important}
-  td{padding:9px 10px;font-size:12px;white-space:nowrap}
+const STATUS_COLORS = {
+  strong: { bg: "#0d2a1a", border: "#1a5a32", text: "#4ade80", label: "Strong" },
+  watch: { bg: "#1a1a0a", border: "#4a4a10", text: "#facc15", label: "Developing" },
+  needs: { bg: "#2a0d0d", border: "#5a1a1a", text: "#f87171", label: "Needs Attn" },
+};
 
-  .pill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:10px;font-family:'DM Mono',monospace;font-weight:500}
-  .pill-above{background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.25)}
-  .pill-below{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2)}
-  .pill-zero{background:rgba(156,163,175,.08);color:#9ca3af;border:1px solid rgba(156,163,175,.15)}
+const TREND_ICONS = { up: "↑", down: "↓", flat: "→" };
+const TREND_COLORS = { up: "#4ade80", down: "#f87171", flat: "#94a3b8" };
 
-  .edu-tag{font-size:10px;font-family:'DM Mono',monospace;color:#f59e0b;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:4px;padding:2px 8px}
+const COLORS = [
+  "#e63946","#2a9d8f","#e9c46a","#f4a261","#4cc9f0",
+  "#c77dff","#06d6a0","#fb8500","#8ecae6","#a8dadc",
+  "#48cae4","#90be6d","#f9c74f","#f3722c","#577590",
+  "#b5838d","#6d6875","#e76f51","#264653",
+];
 
-  .detail-panel{margin-top:14px;padding:14px 16px;background:rgba(43,142,199,.04);border:1px solid #1a3a52;border-radius:8px;display:none}
-  .detail-panel.open{display:block;animation:fadeIn .2s ease}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-  .detail-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:10px}
-  .detail-name{font-size:13px;font-weight:600;color:#7eb8d4;margin-bottom:3px}
-  .detail-meta{font-family:'DM Mono',monospace;font-size:11px;color:#4a6a80}
-  .opp-label{font-size:9px;font-family:'DM Mono',monospace;letter-spacing:.1em;color:#4a6a80;text-transform:uppercase;text-align:right;margin-bottom:3px}
-  .opp-val{font-family:'Sora',sans-serif;font-size:20px;font-weight:700;color:#fbbf24;text-align:right}
-  .modules{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-  .module-tag{padding:3px 10px;border-radius:20px;background:rgba(43,142,199,.08);border:1px solid #1a3a52;font-size:11px;color:#7eb8d4;font-family:'DM Mono',monospace}
+export default function CritCareIQDashboard() {
+  const [activeTab, setActiveTab] = useState("overview");
+  const [filter, setFilter] = useState("all");
+  const [selectedDr, setSelectedDr] = useState(null);
+  const [sortBy, setSortBy] = useState("mar26");
 
-  .footer{margin-top:20px;display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;flex-wrap:wrap;gap:8px}
-  .footer span{font-family:'DM Mono',monospace;font-size:10px;color:#1a2e3e}
+  const groupTrendData = MONTH_KEYS.map((k, i) => ({
+    month: MONTHS[i],
+    "Physician CC%": GROUP_RATES[k],
+    partial: k === "apr26",
+  }));
 
-  svg.spark{overflow:visible;display:block}
+  const filtered = PHYSICIANS
+    .filter(p => {
+      if (filter === "strong") return getStatus(p) === "strong";
+      if (filter === "needs") return getStatus(p) === "needs";
+      if (filter === "watch") return getStatus(p) === "watch";
+      return true;
+    })
+    .sort((a, b) => {
+      const av = a[sortBy] ?? -1;
+      const bv = b[sortBy] ?? -1;
+      return bv - av;
+    });
 
-  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-  .fade1{animation:fadeUp .4s ease both}
-  .fade2{animation:fadeUp .4s .1s ease both}
-  .fade3{animation:fadeUp .4s .2s ease both}
-</style>
-</head>
-<body>
+  const marLeaderboard = [...PHYSICIANS]
+    .filter(p => p.mar26 !== null && (p.cases.mar26 ?? 0) >= 20)
+    .sort((a, b) => b.mar26 - a.mar26)
+    .slice(0, 10);
 
-<div class="header">
-  <div class="logo">
-    <div class="dot"></div>
-    <div class="logo-text">CritCare<span>IQ</span></div>
-    <div class="sep">|</div>
-    <div class="group-name">Mercy Fitzgerald Hospital — O52</div>
-  </div>
-  <div style="display:flex;align-items:center;gap:14px">
-    <div class="month-label">Nov 2025 – Mar 2026</div>
-    <div class="live-badge">REAL DATA</div>
-  </div>
-</div>
+  const chartPhysicians = selectedDr
+    ? PHYSICIANS.filter(p => p.name === selectedDr)
+    : PHYSICIANS.filter(p => p.cases.mar26 >= 30);
 
-<div class="main">
+  const lineData = MONTH_KEYS.map((k, i) => {
+    const obj = { month: MONTHS[i] };
+    chartPhysicians.forEach(p => {
+      if (p[k] !== null) obj[p.name.split(",")[0]] = p[k];
+    });
+    return obj;
+  });
 
-  <!-- Alert -->
-  <div class="alert alert-green fade1">
-    <div class="alert-dot"></div>
-    Early signal: Mar 2026 CC rate 3.6% — stabilizing after Jan low of 3.86%. Email series launched March. Several physicians trending up.
-    &nbsp;|&nbsp; Group still well below 8–10% national benchmark. 5 months of data now available.
-  </div>
+  return (
+    <div style={{
+      fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
+      minHeight: "100vh",
+      background: "#080e14",
+      color: "#e2e8f0",
+    }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f1923; }
+        ::-webkit-scrollbar-thumb { background: #2a3a4a; border-radius: 3px; }
+        .tab-btn { background: transparent; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+        .tab-btn:hover { color: #e2e8f0 !important; }
+        .dr-row:hover { background: #131e2a !important; cursor: pointer; }
+        .filter-btn { border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 500; transition: all 0.2s; }
+      `}</style>
 
-  <!-- KPI Row -->
-  <div class="kpi-row fade1">
-    <div class="stat-card" style="--accent:#f87171">
-      <div class="label">Mar Group CC Rate</div>
-      <div class="big-num">3.6<span style="font-size:16px;color:#4a6a80">%</span></div>
-      <div class="progress-bar">
-        <div class="progress-fill" id="rate-bar" style="width:0%;background:linear-gradient(90deg,#b91c1c,#f87171)"></div>
-      </div>
-      <div style="margin-top:5px;font-family:'DM Mono',monospace;font-size:10px;color:#4a6a80">benchmark target: 8–10%</div>
-    </div>
-    <div class="stat-card" style="--accent:#f59e0b">
-      <div class="label">Est. Monthly CC Revenue</div>
-      <div class="big-num" style="font-size:26px">$13.9K</div>
-      <div class="sub-label" style="color:#f87171">↓ from $18.6K in Nov</div>
-    </div>
-    <div class="stat-card" style="--accent:#f59e0b">
-      <div class="label">Est. Missed Revenue / Mo</div>
-      <div class="big-num" style="color:#fbbf24;font-size:26px">~$20K</div>
-      <div class="sub-label" style="color:#92400e">vs 8% benchmark target</div>
-    </div>
-    <div class="stat-card" style="--accent:#a855f7">
-      <div class="label">Annualized Opportunity</div>
-      <div class="big-num" style="color:#c084fc;font-size:26px">~$240K</div>
-      <div class="sub-label" style="color:#7e22ce">if group reaches 8% CC rate</div>
-    </div>
-  </div>
-
-  <!-- Charts + Leaderboard -->
-  <div class="charts-row fade2">
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div class="label" style="margin-bottom:0">CC Rate Trend by Physician</div>
-        <div class="range-row" style="margin-bottom:0">
-          <button class="range-btn active" onclick="setChartMode('all')">All</button>
-          <button class="range-btn inactive" onclick="setChartMode('top')">Top 5</button>
-          <button class="range-btn inactive" onclick="setChartMode('bottom')">Needs Attn</button>
+      {/* Header */}
+      <div style={{
+        background: "linear-gradient(180deg, #0d1a26 0%, #080e14 100%)",
+        borderBottom: "1px solid #1a2a3a",
+        padding: "20px 32px",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+          <div style={{
+            width: "40px", height: "40px",
+            background: "linear-gradient(135deg, #c8102e 0%, #7b0019 100%)",
+            borderRadius: "10px",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "18px", flexShrink: 0,
+            boxShadow: "0 0 20px rgba(200,16,46,0.3)",
+          }}>⚕</div>
+          <div>
+            <div style={{ fontSize: "18px", fontWeight: "700", letterSpacing: "-0.3px", color: "#f1f5f9" }}>
+              CritCareIQ
+            </div>
+            <div style={{ fontSize: "11px", color: "#475569", letterSpacing: "0.5px" }}>
+              MERCY FITZGERALD HOSPITAL · O52 · PHYSICIAN CC RATES
+            </div>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{
+            background: "#0d1f0d", border: "1px solid #1a4a1a",
+            borderRadius: "6px", padding: "6px 14px",
+            fontSize: "11px", color: "#4ade80", letterSpacing: "1px", fontWeight: "500",
+          }}>
+            NOV 2025 – APR 2026
+          </div>
+          <div style={{
+            background: "#1a0d0d", border: "1px solid #4a1a1a",
+            borderRadius: "6px", padding: "6px 14px",
+            fontSize: "11px", color: "#f87171", letterSpacing: "1px", fontWeight: "500",
+          }}>
+            TARGET: 8–10%
+          </div>
         </div>
       </div>
-      <canvas id="trendChart" height="200"></canvas>
-    </div>
-    <div class="card">
-      <div class="label" style="margin-bottom:12px">Mar 2026 Leaderboard</div>
-      <div class="leaderboard" id="leaderboard"></div>
-    </div>
-  </div>
 
-  <!-- Table -->
-  <div class="table-card fade3">
-    <div class="table-header">
-      <div class="label" style="margin-bottom:0">Physician Detail — All Months</div>
-      <div class="tabs">
-        <button class="tab active" id="tab-all" onclick="setTab('all')">All</button>
-        <button class="tab inactive" id="tab-concern" onclick="setTab('concern')">Needs Attention</button>
-        <button class="tab inactive" id="tab-strong" onclick="setTab('strong')">Strong Billers</button>
+      {/* Nav tabs */}
+      <div style={{
+        display: "flex", gap: "0",
+        borderBottom: "1px solid #1a2a3a",
+        background: "#0a1520",
+        padding: "0 32px",
+      }}>
+        {[
+          { id: "overview", label: "Overview" },
+          { id: "leaderboard", label: "Mar Leaderboard" },
+          { id: "trends", label: "Physician Trends" },
+          { id: "table", label: "Full Data Table" },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            className="tab-btn"
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              padding: "14px 20px",
+              fontSize: "13px", fontWeight: "500",
+              color: activeTab === tab.id ? "#e2e8f0" : "#475569",
+              borderBottom: activeTab === tab.id ? "2px solid #c8102e" : "2px solid transparent",
+              marginBottom: "-1px",
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ padding: "28px 32px", maxWidth: "1300px", margin: "0 auto" }}>
+
+        {/* OVERVIEW TAB */}
+        {activeTab === "overview" && (
+          <div>
+            {/* KPI cards */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginBottom: "28px" }}>
+              {[
+                {
+                  label: "Mar '26 Physician CC Rate",
+                  value: "5.2%",
+                  sub: "↑ from 3.8% Jan low",
+                  color: "#4ade80",
+                  bg: "#0a1f0a",
+                  border: "#1a4a1a",
+                },
+                {
+                  label: "National EM Benchmark",
+                  value: "8–10%",
+                  sub: "Gap: ~3pts from target",
+                  color: "#facc15",
+                  bg: "#1a1a08",
+                  border: "#3a3a10",
+                },
+                {
+                  label: "Est. Missed Rev / Month",
+                  value: "~$20K",
+                  sub: "vs. 8% benchmark",
+                  color: "#f87171",
+                  bg: "#1a0808",
+                  border: "#3a1010",
+                },
+                {
+                  label: "Annualized Opportunity",
+                  value: "~$240K",
+                  sub: "@ $162/encounter (Medicare)",
+                  color: "#60a5fa",
+                  bg: "#080e1a",
+                  border: "#1020 3a",
+                },
+              ].map((card, i) => (
+                <div key={i} style={{
+                  background: card.bg,
+                  border: `1px solid ${card.border}`,
+                  borderRadius: "12px", padding: "20px",
+                }}>
+                  <div style={{ fontSize: "11px", color: "#475569", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "10px" }}>
+                    {card.label}
+                  </div>
+                  <div style={{ fontSize: "28px", fontWeight: "700", color: card.color, letterSpacing: "-1px", marginBottom: "4px" }}>
+                    {card.value}
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#64748b" }}>{card.sub}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Group trend chart */}
+            <div style={{
+              background: "#0a1520", border: "1px solid #1a2a3a",
+              borderRadius: "12px", padding: "24px", marginBottom: "28px",
+            }}>
+              <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div>
+                  <div style={{ fontSize: "14px", fontWeight: "600", color: "#e2e8f0" }}>
+                    Physician CC Rate — Group Trend
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#475569", marginTop: "2px" }}>
+                    Volume Group – Physicians row only · APPs excluded
+                  </div>
+                </div>
+                <div style={{
+                  background: "#0d1a0d", border: "1px solid #1a3a1a",
+                  borderRadius: "6px", padding: "4px 12px",
+                  fontSize: "11px", color: "#4ade80",
+                }}>
+                  ★ Email series launched Mar '26
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={groupTrendData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1a2a3a" />
+                  <XAxis dataKey="month" tick={{ fill: "#475569", fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: "#475569", fontSize: 12 }} axisLine={false} tickLine={false} domain={[0, 12]} tickFormatter={v => `${v}%`} />
+                  <Tooltip
+                    contentStyle={{ background: "#0f1923", border: "1px solid #2a3a4a", borderRadius: "8px", fontSize: "13px" }}
+                    formatter={(v, n, props) => [`${v}%${props.payload?.partial ? " ⚑ partial" : ""}`, n]}
+                  />
+                  <ReferenceLine y={8} stroke="#facc15" strokeDasharray="4 4" label={{ value: "8% target", fill: "#facc15", fontSize: 11, position: "right" }} />
+                  <Line
+                    type="monotone" dataKey="Physician CC%"
+                    stroke="#c8102e" strokeWidth={2.5}
+                    dot={(props) => {
+                      const { cx, cy, payload } = props;
+                      return <circle key={cx} cx={cx} cy={cy} r={payload.partial ? 5 : 4}
+                        fill={payload.partial ? "#facc15" : "#c8102e"}
+                        stroke={payload.partial ? "#facc15" : "#c8102e"}
+                        strokeWidth={payload.partial ? 2 : 0}
+                        strokeDasharray={payload.partial ? "3 2" : "0"}
+                      />;
+                    }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+              <div style={{ display: "flex", gap: "20px", marginTop: "12px", fontSize: "11px", color: "#475569" }}>
+                <span>● Red line = physician CC rate</span>
+                <span style={{ color: "#facc15" }}>◉ Yellow dot = partial month (Apr '26, {APR_PCT}% billed)</span>
+                <span style={{ color: "#facc15" }}>— — Yellow line = 8% benchmark target</span>
+              </div>
+            </div>
+
+            {/* Status summary */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
+              {["strong", "watch", "needs"].map(s => {
+                const cfg = STATUS_COLORS[s];
+                const docs = PHYSICIANS.filter(p => getStatus(p) === s);
+                return (
+                  <div key={s} style={{
+                    background: cfg.bg, border: `1px solid ${cfg.border}`,
+                    borderRadius: "12px", padding: "20px",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
+                      <div style={{ fontSize: "13px", fontWeight: "600", color: cfg.text }}>{cfg.label}</div>
+                      <div style={{
+                        background: cfg.border, borderRadius: "20px",
+                        padding: "2px 10px", fontSize: "12px", color: cfg.text, fontWeight: "600",
+                      }}>{docs.length}</div>
+                    </div>
+                    {docs.map(p => (
+                      <div key={p.name} style={{
+                        display: "flex", justifyContent: "space-between",
+                        fontSize: "12px", color: "#94a3b8", marginBottom: "6px",
+                        padding: "4px 0", borderBottom: "1px solid rgba(255,255,255,0.04)",
+                      }}>
+                        <span>{p.name.split(",")[0]}</span>
+                        <span style={{ color: cfg.text, fontWeight: "500", fontFamily: "'DM Mono', monospace" }}>
+                          {p.mar26 !== null ? `${p.mar26}%` : "—"} Mar
+                          <span style={{ marginLeft: "6px", color: TREND_COLORS[getTrend(p)] }}>
+                            {TREND_ICONS[getTrend(p)]}
+                          </span>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* LEADERBOARD TAB */}
+        {activeTab === "leaderboard" && (
+          <div>
+            <div style={{ marginBottom: "20px" }}>
+              <div style={{ fontSize: "16px", fontWeight: "600", color: "#e2e8f0", marginBottom: "4px" }}>
+                March 2026 Physician Leaderboard
+              </div>
+              <div style={{ fontSize: "12px", color: "#475569" }}>
+                Physicians with ≥20 cases in March · Ranked by CC% · National benchmark: 8–10%
+              </div>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {marLeaderboard.map((p, i) => {
+                const pct = p.mar26;
+                const barWidth = Math.min((pct / 12) * 100, 100);
+                const atBench = pct >= BENCHMARK;
+                const barColor = pct >= BENCHMARK ? "#4ade80" : pct >= 5 ? "#facc15" : "#f87171";
+                return (
+                  <div key={p.name} style={{
+                    background: "#0a1520", border: `1px solid ${atBench ? "#1a4a1a" : "#1a2a3a"}`,
+                    borderRadius: "10px", padding: "16px 20px",
+                    display: "flex", alignItems: "center", gap: "16px",
+                  }}>
+                    <div style={{
+                      width: "32px", height: "32px", borderRadius: "50%", flexShrink: 0,
+                      background: i === 0 ? "linear-gradient(135deg,#f59e0b,#d97706)" :
+                        i === 1 ? "linear-gradient(135deg,#94a3b8,#64748b)" :
+                        i === 2 ? "linear-gradient(135deg,#b45309,#92400e)" : "#1a2a3a",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: "13px", fontWeight: "700", color: i < 3 ? "#fff" : "#475569",
+                    }}>
+                      {i + 1}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                        <div style={{ fontSize: "14px", fontWeight: "600", color: "#e2e8f0" }}>{p.name}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          <span style={{ fontSize: "11px", color: "#475569" }}>{p.cases.mar26} cases</span>
+                          <span style={{
+                            fontSize: "18px", fontWeight: "700",
+                            color: barColor, fontFamily: "'DM Mono', monospace",
+                          }}>{pct}%</span>
+                        </div>
+                      </div>
+                      <div style={{ background: "#131e2a", borderRadius: "4px", height: "8px", overflow: "hidden" }}>
+                        <div style={{
+                          width: `${barWidth}%`, height: "100%",
+                          background: `linear-gradient(90deg, ${barColor}88, ${barColor})`,
+                          borderRadius: "4px", transition: "width 0.8s ease",
+                        }} />
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "4px" }}>
+                        {atBench ? (
+                          <span style={{ fontSize: "10px", color: "#4ade80" }}>✓ At benchmark</span>
+                        ) : (
+                          <span style={{ fontSize: "10px", color: "#475569" }}>
+                            {(BENCHMARK - pct).toFixed(1)}% below target
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ marginTop: "16px", fontSize: "11px", color: "#334155", textAlign: "center" }}>
+              Physicians with fewer than 20 March cases excluded from ranked view due to rate volatility.
+            </div>
+          </div>
+        )}
+
+        {/* TRENDS TAB */}
+        {activeTab === "trends" && (
+          <div>
+            <div style={{ marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ fontSize: "14px", fontWeight: "600", color: "#e2e8f0" }}>Individual Physician Trends</div>
+                <div style={{ fontSize: "12px", color: "#475569", marginTop: "2px" }}>
+                  Showing physicians with ≥30 cases in March · Click legend to filter
+                </div>
+              </div>
+              <select
+                value={selectedDr || ""}
+                onChange={e => setSelectedDr(e.target.value || null)}
+                style={{
+                  background: "#0f1923", border: "1px solid #2a3a4a",
+                  borderRadius: "6px", padding: "6px 12px",
+                  color: "#e2e8f0", fontSize: "12px", cursor: "pointer",
+                }}
+              >
+                <option value="">All (≥30 cases)</option>
+                {PHYSICIANS.map(p => (
+                  <option key={p.name} value={p.name}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{
+              background: "#0a1520", border: "1px solid #1a2a3a",
+              borderRadius: "12px", padding: "24px",
+            }}>
+              <ResponsiveContainer width="100%" height={380}>
+                <LineChart data={lineData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1a2a3a" />
+                  <XAxis dataKey="month" tick={{ fill: "#475569", fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: "#475569", fontSize: 12 }} axisLine={false} tickLine={false}
+                    domain={[0, 20]} tickFormatter={v => `${v}%`} />
+                  <Tooltip
+                    contentStyle={{ background: "#0f1923", border: "1px solid #2a3a4a", borderRadius: "8px", fontSize: "12px" }}
+                    formatter={(v) => [`${v}%`]}
+                  />
+                  <ReferenceLine y={8} stroke="#facc15" strokeDasharray="4 4" />
+                  <Legend wrapperStyle={{ fontSize: "11px", color: "#64748b" }} />
+                  {chartPhysicians.map((p, i) => (
+                    <Line
+                      key={p.name}
+                      type="monotone"
+                      dataKey={p.name.split(",")[0]}
+                      stroke={COLORS[i % COLORS.length]}
+                      strokeWidth={selectedDr === p.name ? 3 : 1.5}
+                      dot={{ r: 3 }}
+                      connectNulls
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div style={{ marginTop: "12px", fontSize: "11px", color: "#334155", textAlign: "center" }}>
+              Yellow dashed line = 8% benchmark · Apr '26 is partial (73.89% billed)
+            </div>
+          </div>
+        )}
+
+        {/* FULL TABLE TAB */}
+        {activeTab === "table" && (
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+              <div style={{ fontSize: "14px", fontWeight: "600", color: "#e2e8f0" }}>
+                All Physicians · All Months
+              </div>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {[
+                  { id: "all", label: "All" },
+                  { id: "strong", label: "Strong (≥8% avg)" },
+                  { id: "watch", label: "Developing" },
+                  { id: "needs", label: "Needs Attn" },
+                ].map(f => (
+                  <button
+                    key={f.id}
+                    className="filter-btn"
+                    onClick={() => setFilter(f.id)}
+                    style={{
+                      background: filter === f.id ? "#1a2a3a" : "transparent",
+                      border: `1px solid ${filter === f.id ? "#4a6a8a" : "#2a3a4a"}`,
+                      color: filter === f.id ? "#e2e8f0" : "#475569",
+                    }}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid #1a2a3a" }}>
+                    <th style={{ textAlign: "left", padding: "10px 12px", color: "#475569", fontWeight: "500", whiteSpace: "nowrap" }}>Physician</th>
+                    <th style={{ textAlign: "center", padding: "10px 8px", color: "#475569", fontWeight: "500" }}>Status</th>
+                    {MONTHS.map((m, i) => (
+                      <th key={m} style={{
+                        textAlign: "center", padding: "10px 8px",
+                        color: i === 5 ? "#facc15" : "#475569", fontWeight: "500",
+                        cursor: "pointer", whiteSpace: "nowrap",
+                      }}
+                        onClick={() => setSortBy(MONTH_KEYS[i])}
+                      >
+                        {m}{i === 5 ? " ⚑" : ""}
+                        {sortBy === MONTH_KEYS[i] ? " ▼" : ""}
+                      </th>
+                    ))}
+                    <th style={{ textAlign: "center", padding: "10px 8px", color: "#475569", fontWeight: "500" }}>Avg</th>
+                    <th style={{ textAlign: "center", padding: "10px 8px", color: "#475569", fontWeight: "500" }}>Trend</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((p, idx) => {
+                    const status = getStatus(p);
+                    const cfg = STATUS_COLORS[status];
+                    const trend = getTrend(p);
+                    const avg = getAvg(p);
+                    return (
+                      <tr key={p.name} className="dr-row" style={{
+                        borderBottom: "1px solid #0f1923",
+                        background: idx % 2 === 0 ? "#0a1218" : "#080e14",
+                      }}>
+                        <td style={{ padding: "10px 12px", fontWeight: "500", color: "#e2e8f0", whiteSpace: "nowrap" }}>
+                          {p.name}
+                          {p.note && <span style={{ fontSize: "10px", color: "#475569", marginLeft: "6px" }}>*</span>}
+                        </td>
+                        <td style={{ padding: "10px 8px", textAlign: "center" }}>
+                          <span style={{
+                            background: cfg.bg, border: `1px solid ${cfg.border}`,
+                            borderRadius: "4px", padding: "2px 8px",
+                            fontSize: "10px", color: cfg.text, fontWeight: "500",
+                          }}>{cfg.label}</span>
+                        </td>
+                        {MONTH_KEYS.map((k, i) => {
+                          const v = p[k];
+                          const cellColor = v === null ? "#334155" :
+                            v >= BENCHMARK ? "#4ade80" :
+                            v >= 5 ? "#facc15" : "#f87171";
+                          return (
+                            <td key={k} style={{
+                              padding: "10px 8px", textAlign: "center",
+                              fontFamily: "'DM Mono', monospace", fontSize: "12px",
+                              color: i === 5 ? (v !== null ? cellColor : "#334155") : cellColor,
+                              opacity: i === 5 ? 0.85 : 1,
+                            }}>
+                              {v !== null ? `${v}%` : "—"}
+                            </td>
+                          );
+                        })}
+                        <td style={{
+                          padding: "10px 8px", textAlign: "center",
+                          fontFamily: "'DM Mono', monospace", fontSize: "12px",
+                          color: "#94a3b8", fontWeight: "600",
+                        }}>
+                          {avg}%
+                        </td>
+                        <td style={{
+                          padding: "10px 8px", textAlign: "center",
+                          fontSize: "16px", color: TREND_COLORS[trend],
+                        }}>
+                          {TREND_ICONS[trend]}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div style={{ marginTop: "16px", display: "flex", gap: "20px", fontSize: "11px", color: "#334155" }}>
+              <span style={{ color: "#4ade80" }}>■ Green = ≥8% (benchmark)</span>
+              <span style={{ color: "#facc15" }}>■ Yellow = 5–7.9%</span>
+              <span style={{ color: "#f87171" }}>■ Red = &lt;5%</span>
+              <span style={{ color: "#facc15" }}>⚑ Apr '26 partial (73.89% billed)</span>
+              <span>↑↓ = trend from Jan–Mar</span>
+              <span>Click month header to sort</span>
+            </div>
+          </div>
+        )}
+
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        borderTop: "1px solid #0f1923",
+        padding: "16px 32px",
+        fontSize: "11px", color: "#1e2a3a", textAlign: "center", lineHeight: "1.6",
+      }}>
+        CritCareIQ · Physician CC rates only · APPs excluded from all calculations · Revenue est. @ $162/encounter (Medicare blended) ·
+        For QI/educational use only · Not a substitute for compliance review · Mercy Fitzgerald O52
       </div>
     </div>
-    <div style="overflow-x:auto">
-      <table>
-        <thead>
-          <tr>
-            <th>Physician</th>
-            <th>Status</th>
-            <th>Nov '25</th>
-            <th>Dec '25</th>
-            <th>Jan '26</th>
-            <th>Feb '26</th>
-            <th>Mar '26</th>
-            <th>5-Mo Avg</th>
-            <th>Trend</th>
-            <th>Mar Cases</th>
-            <th>Mar CC Billed</th>
-            <th>Est. Mar Rev</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="physician-tbody"></tbody>
-      </table>
-    </div>
-    <div class="detail-panel" id="detail-panel"></div>
-  </div>
-
-  <div class="footer">
-    <span>CritCareIQ · Revenue est. @ $162/encounter (Medicare blended) · Mercy Fitzgerald O52 · For QI use only</span>
-    <span>Source: Practice Management Report 4.3a · Nov 2025–Mar 2026</span>
-  </div>
-</div>
-
-<script>
-const TARGET = 8.0;
-const RATE = 162;
-
-// feb/mar cases from the practice management reports
-const physicians = [
-  {name:"Azer, Michele",     nov:8.6,  dec:7.6,  jan:1.9,  feb:2.3,  mar:4.7,  novCases:117, decCases:119, janCases:103, febCases:129, marCases:107},
-  {name:"Bendesky, Brad",    nov:2.3,  dec:7.4,  jan:3.6,  feb:2.1,  mar:5.4,  novCases:177, decCases:202, janCases:194, febCases:189, marCases:203},
-  {name:"Bethel, Courtney",  nov:8.0,  dec:5.3,  jan:4.6,  feb:4.7,  mar:7.5,  novCases:125, decCases:170, janCases:129, febCases:143, marCases:199},
-  {name:"Bianchi, Pollianne",nov:3.2,  dec:7.7,  jan:3.7,  feb:3.6,  mar:5.3,  novCases:155, decCases:182, janCases:192, febCases:206, marCases:209},
-
-  {name:"Casey, Gregory",    nov:7.7,  dec:6.1,  jan:9.2,  feb:7.1,  mar:9.4,  novCases:182, decCases:165, janCases:164, febCases:154, marCases:212},
-  {name:"Disandro, Daniel",  nov:2.0,  dec:1.5,  jan:0.0,  feb:0.6,  mar:3.1,  novCases:151, decCases:196, janCases:194, febCases:156, marCases:159},
-  {name:"Dollard, Denis",    nov:1.5,  dec:3.6,  jan:6.5,  feb:4.0,  mar:3.2,  novCases:134, decCases:110, janCases:123, febCases:126, marCases:125},
-  {name:"Gejer, Wendymarie", nov:8.7,  dec:4.0,  jan:6.1,  feb:5.1,  mar:4.1,  novCases:115, decCases:100, janCases:114, febCases:98,  marCases:122},
-  {name:"Hand, Steven",      nov:7.1,  dec:3.0,  jan:4.3,  feb:3.2,  mar:7.1,  novCases:168, decCases:166, janCases:164, febCases:190, marCases:170},
-  {name:"Jain, Sechin",      nov:7.0,  dec:7.9,  jan:5.3,  feb:12.5, mar:8.2,  novCases:86,  decCases:38,  janCases:57,  febCases:24,  marCases:61},
-  {name:"Kleinberg, Christopher", nov:null, dec:null, jan:null, feb:10.3, mar:6.7, novCases:0, decCases:0, janCases:0, febCases:29, marCases:75},
-  {name:"Krass, Samuel",     nov:1.4,  dec:7.8,  jan:2.1,  feb:5.4,  mar:5.8,  novCases:71,  decCases:51,  janCases:48,  febCases:92,  marCases:104},
-  {name:"Kulp, Kari",        nov:0.0,  dec:11.1, jan:2.6,  feb:3.6,  mar:4.2,  novCases:24,  decCases:27,  janCases:38,  febCases:28,  marCases:24},
-  {name:"Lehman, Curtis",    nov:6.5,  dec:5.5,  jan:5.5,  feb:5.7,  mar:5.0,  novCases:229, decCases:271, janCases:272, febCases:230, marCases:202},
-  {name:"Lutz, Ronald",      nov:7.1,  dec:7.5,  jan:5.1,  feb:6.8,  mar:4.1,  novCases:182, decCases:173, janCases:175, febCases:176, marCases:218},
-  {name:"Makopoulos, John",  nov:0.5,  dec:1.0,  jan:0.9,  feb:2.3,  mar:2.2,  novCases:189, decCases:209, janCases:212, febCases:215, marCases:223},
-  {name:"Yoon, Russell",     nov:1.1,  dec:1.6,  jan:0.0,  feb:0.0,  mar:1.5,  novCases:93,  decCases:126, janCases:138, febCases:138, marCases:130},
-];
-
-// Derived fields — avg excludes nulls, uses mar as "latest"
-physicians.forEach(p => {
-  const vals = [p.nov, p.dec, p.jan, p.feb, p.mar].filter(v => v !== null);
-  p.avg = +(vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(2);
-  p.marCC = Math.round(p.marCases * p.mar / 100);
-  p.marRev = p.marCC * RATE;
-  // trend: compare mar to earliest available
-  const first = [p.nov, p.dec, p.jan].find(v => v !== null) ?? p.feb;
-  p.trendDir = p.mar > first ? "up" : p.mar < first ? "down" : "flat";
-  // status based on mar
-  if (p.mar === 0 && p.feb === 0 && (p.jan === 0 || p.jan === null)) p.status = "zero";
-  else if (p.mar >= TARGET) p.status = "above";
-  else if (p.mar >= 5) p.status = "below";
-  else p.status = "concern";
-});
-
-// Progress bar
-setTimeout(() => {
-  document.getElementById('rate-bar').style.width = Math.round((3.6/10)*100) + '%';
-}, 300);
-
-// Leaderboard — sorted by Mar
-function renderLeaderboard() {
-  const sorted = [...physicians].sort((a,b) => b.mar - a.mar);
-  const max = sorted[0].mar || 1;
-  const lb = document.getElementById('leaderboard');
-  lb.innerHTML = '';
-  sorted.forEach((p, i) => {
-    const color = p.mar >= TARGET ? '#4ade80' : p.mar >= 5 ? '#fbbf24' : p.mar > 0 ? '#f87171' : '#374151';
-    const trendIcon = p.trendDir === 'up' ? '↑' : p.trendDir === 'down' ? '↓' : '→';
-    const trendColor = p.trendDir === 'up' ? '#4ade80' : p.trendDir === 'down' ? '#f87171' : '#4a6a80';
-    const shortName = p.name.split(',')[0];
-    lb.innerHTML += `
-      <div class="lb-row" onclick="selectPhysician('${p.name}')">
-        <div class="lb-rank">${i+1}</div>
-        <div class="lb-name">${shortName}</div>
-        <div class="lb-bar-wrap"><div class="lb-bar" style="width:${(p.mar/max)*100}%;background:${color}"></div></div>
-        <div class="lb-val" style="color:${color}">${p.mar.toFixed(1)}%</div>
-        <div class="lb-trend" style="color:${trendColor}">${trendIcon}</div>
-      </div>`;
-  });
+  );
 }
-renderLeaderboard();
-
-// Trend Chart
-const COLORS = [
-  '#2b8ec7','#4ade80','#f59e0b','#a78bfa','#f87171',
-  '#34d399','#fb923c','#60a5fa','#e879f9','#facc15',
-  '#94a3b8','#f43f5e','#10b981','#6366f1','#84cc16',
-  '#0ea5e9','#d946ef','#fbbf24'
-];
-
-let chartInstance = null;
-let chartMode = 'all';
-
-function buildChartDatasets(mode) {
-  let list = [...physicians];
-  if (mode === 'top') list = [...physicians].sort((a,b) => b.avg - a.avg).slice(0,5);
-  if (mode === 'bottom') list = [...physicians].filter(p => p.avg < 4).sort((a,b) => a.avg - b.avg);
-
-  return list.map((p) => {
-    const idx = physicians.indexOf(p);
-    // build data points — null means skip that month
-    const data = [
-      p.nov !== null ? p.nov : null,
-      p.dec !== null ? p.dec : null,
-      p.jan !== null ? p.jan : null,
-      p.feb,
-      p.mar
-    ];
-    return {
-      label: p.name.split(',')[0],
-      data,
-      borderColor: COLORS[idx % COLORS.length],
-      backgroundColor: 'transparent',
-      borderWidth: 1.5,
-      pointRadius: 3,
-      pointHoverRadius: 5,
-      tension: 0.3,
-      spanGaps: true,
-    };
-  });
-}
-
-function initChart(mode) {
-  const ctx = document.getElementById('trendChart').getContext('2d');
-  if (chartInstance) chartInstance.destroy();
-  chartInstance = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: ["Nov '25", "Dec '25", "Jan '26", "Feb '26", "Mar '26"],
-      datasets: buildChartDatasets(mode)
-    },
-    options: {
-      responsive: true,
-      interaction: {mode:'index', intersect:false},
-      plugins: {
-        legend: {
-          display: true,
-          position: 'bottom',
-          labels: {
-            color: '#4a6a80',
-            font: {family:"'DM Mono', monospace", size:9},
-            boxWidth: 10,
-            padding: 8,
-          }
-        },
-        tooltip: {
-          backgroundColor: '#0d1821',
-          borderColor: '#2a3f52',
-          borderWidth: 1,
-          titleColor: '#7eb8d4',
-          bodyColor: '#d4e8f5',
-          titleFont: {family:"'DM Mono', monospace", size:10},
-          bodyFont: {family:"'DM Mono', monospace", size:11},
-          callbacks: { label: c => c.parsed.y !== null ? ` ${c.dataset.label}: ${c.parsed.y.toFixed(1)}%` : '' }
-        }
-      },
-      scales: {
-        x: {
-          grid: {color:'#0d1821'},
-          ticks: {color:'#4a6a80', font:{family:"'DM Mono', monospace", size:10}},
-          border: {display:false}
-        },
-        y: {
-          grid: {color:'#112030'},
-          ticks: {color:'#4a6a80', font:{family:"'DM Mono', monospace", size:10}, callback: v => v+'%'},
-          border: {display:false},
-          min: 0, max: 15
-        }
-      }
-    }
-  });
-}
-initChart('all');
-
-function setChartMode(mode) {
-  chartMode = mode;
-  document.querySelectorAll('.range-btn').forEach(b => {
-    const matches = (mode==='all'&&b.textContent==='All')||(mode==='top'&&b.textContent==='Top 5')||(mode==='bottom'&&b.textContent==='Needs Attn');
-    b.className = 'range-btn ' + (matches ? 'active' : 'inactive');
-  });
-  initChart(mode);
-}
-
-// Spark — now 5 points
-function sparkSVG(nov, dec, jan, feb, mar, color) {
-  const vals = [nov, dec, jan, feb, mar];
-  const min = 0, max = 15, w = 60, h = 20;
-  const validVals = vals.map((v,i) => v !== null ? {i, v} : null).filter(Boolean);
-  if (validVals.length < 2) return '';
-  const pts = validVals.map(({i, v}) => `${i*(w/4)},${h - ((v-min)/(max-min))*h}`).join(' ');
-  const lastValid = validVals[validVals.length-1];
-  return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
-    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="${lastValid.i*(w/4)}" cy="${h - ((lastValid.v-min)/(max-min))*h}" r="2.5" fill="${color}"/>
-  </svg>`;
-}
-
-// Table
-let currentTab = 'all';
-let selectedName = null;
-
-function setTab(t) {
-  currentTab = t;
-  ['all','concern','strong'].forEach(id => {
-    document.getElementById('tab-'+id).className = 'tab ' + (id===t?'active':'inactive');
-  });
-  selectedName = null;
-  renderTable();
-}
-
-function selectPhysician(name) {
-  selectedName = selectedName === name ? null : name;
-  renderTable();
-  if (selectedName) {
-    document.querySelector('.table-card').scrollIntoView({behavior:'smooth', block:'nearest'});
-  }
-}
-
-function fmtPct(v) {
-  if (v === null) return '<span style="color:#2a3f52">—</span>';
-  return v.toFixed(1) + '%';
-}
-
-function renderTable() {
-  const sorted = [...physicians].sort((a,b) => b.mar - a.mar);
-  let list = sorted;
-  if (currentTab === 'concern') list = sorted.filter(p => p.status === 'concern' || p.status === 'zero');
-  if (currentTab === 'strong') list = sorted.filter(p => p.status === 'above' || p.avg >= 5);
-
-  const tbody = document.getElementById('physician-tbody');
-  tbody.innerHTML = '';
-
-  list.forEach(p => {
-    let pillHtml;
-    if (p.status === 'above') {
-      pillHtml = `<span class="pill pill-above">↑ Above</span>`;
-    } else if (p.status === 'zero') {
-      pillHtml = `<span class="pill pill-zero">— Zero</span>`;
-    } else if (p.status === 'concern') {
-      pillHtml = `<span class="pill pill-below">⚠ Critical</span>`;
-    } else {
-      pillHtml = `<span class="pill pill-below">↓ Below</span>`;
-    }
-
-    const col = v => v === null ? '#2a3f52' : v >= TARGET ? '#4ade80' : v >= 5 ? '#fbbf24' : v > 0 ? '#f87171' : '#374151';
-    const sparkColor = p.trendDir === 'up' ? '#4ade80' : p.trendDir === 'down' ? '#f87171' : '#4a6a80';
-    const spark = sparkSVG(p.nov, p.dec, p.jan, p.feb, p.mar, sparkColor);
-
-    const trendStr = p.trendDir === 'up'
-      ? `<span style="color:#4ade80">↑ ${(p.mar - ([p.nov,p.dec,p.jan].find(v=>v!==null)??p.feb)).toFixed(1)}%</span>`
-      : p.trendDir === 'down'
-      ? `<span style="color:#f87171">↓ ${Math.abs(p.mar - ([p.nov,p.dec,p.jan].find(v=>v!==null)??p.feb)).toFixed(1)}%</span>`
-      : `<span style="color:#4a6a80">→</span>`;
-
-    const edu = (p.status !== 'above') ? `<span class="edu-tag">→ Needs education</span>` : '';
-
-    const tr = document.createElement('tr');
-    if (p.name === selectedName) tr.classList.add('selected');
-    tr.innerHTML = `
-      <td style="color:#d4e8f5;font-weight:500">${p.name}</td>
-      <td>${pillHtml}</td>
-      <td style="font-family:'DM Mono',monospace;color:${col(p.nov)}">${fmtPct(p.nov)}</td>
-      <td style="font-family:'DM Mono',monospace;color:${col(p.dec)}">${fmtPct(p.dec)}</td>
-      <td style="font-family:'DM Mono',monospace;color:${col(p.jan)}">${fmtPct(p.jan)}</td>
-      <td style="font-family:'DM Mono',monospace;color:${col(p.feb)}">${fmtPct(p.feb)}</td>
-      <td style="font-family:'DM Mono',monospace;color:${col(p.mar)};font-weight:600">${fmtPct(p.mar)}</td>
-      <td style="font-family:'DM Mono',monospace;color:#7eb8d4">${p.avg.toFixed(1)}%</td>
-      <td>${spark} <span style="font-family:'DM Mono',monospace;font-size:10px">${trendStr}</span></td>
-      <td style="font-family:'DM Mono',monospace;color:#7eb8d4">${p.marCases}</td>
-      <td style="font-family:'DM Mono',monospace;color:#7eb8d4">${p.marCC}</td>
-      <td style="font-family:'DM Mono',monospace;color:#d4e8f5">$${p.marRev.toLocaleString()}</td>
-      <td>${edu}</td>`;
-    tr.addEventListener('click', () => selectPhysician(p.name));
-    tbody.appendChild(tr);
-  });
-
-  renderDetail();
-}
-
-function renderDetail() {
-  const panel = document.getElementById('detail-panel');
-  if (!selectedName) { panel.className = 'detail-panel'; return; }
-  const p = physicians.find(x => x.name === selectedName);
-  if (!p) return;
-
-  const gap = Math.max(0, TARGET - p.mar);
-  const annOpp = Math.round((gap / 100) * p.marCases * 12 * RATE);
-
-  const oppBlock = p.status !== 'above' ? `
-    <div>
-      <div class="opp-label">Annualized opportunity</div>
-      <div class="opp-val">${annOpp > 0 ? '$' + annOpp.toLocaleString() : 'At target'}</div>
-    </div>` : `<div><div class="opp-label">Status</div><div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:#4ade80;text-align:right">Above Target ✓</div></div>`;
-
-  let mods = [];
-  if (p.mar < 3)  mods = ['Critical Care Fundamentals', 'Sepsis Documentation', '30-Min CC Threshold'];
-  else if (p.mar < 6) mods = ['BiPAP / NIV Time Documentation', 'DKA Management CC Criteria', 'GI Bleed CC Module'];
-  else if (p.mar < TARGET) mods = ['Hyperkalemia CC Billing', 'CC Time Documentation Tips', 'Sepsis Advanced Module'];
-
-  const modBlock = mods.length ? `
-    <div class="modules">${mods.map(m => `<div class="module-tag">📚 ${m}</div>`).join('')}</div>` : '';
-
-  const novStr = p.nov !== null ? p.nov.toFixed(1)+'%' : '—';
-  const trend5 = `Nov: ${novStr} → Dec: ${p.dec !== null ? p.dec.toFixed(1)+'%' : '—'} → Jan: ${p.jan !== null ? p.jan.toFixed(1)+'%' : '—'} → Feb: ${p.feb.toFixed(1)}% → Mar: ${p.mar.toFixed(1)}%`;
-  const trendColor = p.trendDir === 'up' ? '#4ade80' : p.trendDir === 'down' ? '#f87171' : '#4a6a80';
-
-  panel.innerHTML = `
-    <div class="detail-top">
-      <div>
-        <div class="detail-name">${p.name}</div>
-        <div class="detail-meta">${p.marCases} Mar cases &nbsp;·&nbsp; ${p.marCC} CC billed &nbsp;·&nbsp; $${p.marRev.toLocaleString()} est. Mar revenue</div>
-        <div style="margin-top:6px;font-family:'DM Mono',monospace;font-size:10px;color:${trendColor}">${trend5}</div>
-      </div>
-      ${oppBlock}
-    </div>
-    ${modBlock}`;
-  panel.className = 'detail-panel open';
-}
-
-renderTable();
-</script>
-</body>
-</html>
