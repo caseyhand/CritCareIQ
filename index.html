@@ -7,502 +7,487 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.8.0/Recharts.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
+  html, body { min-height: 100%; }
   body { background: #080e14; color: #e2e8f0; font-family: 'DM Sans', 'Helvetica Neue', sans-serif; }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: #0f1923; }
   ::-webkit-scrollbar-thumb { background: #2a3a4a; border-radius: 3px; }
-  #root { min-height: 100vh; }
-  .tab-btn { background: transparent; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+  .tab-btn { background: transparent; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: color 0.2s; }
   .tab-btn:hover { color: #e2e8f0 !important; }
-  .dr-row:hover { background: #131e2a !important; cursor: default; }
+  .dr-row:hover { background: #131e2a !important; }
   .filter-btn { border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 500; transition: all 0.2s; }
   select { background: #0f1923; border: 1px solid #2a3a4a; border-radius: 6px; padding: 6px 12px; color: #e2e8f0; font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
   table { border-collapse: collapse; width: 100%; }
+  input[type=range] { accent-color: #c8102e; cursor: pointer; width: 100%; }
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
 const { useState } = React;
-const {
-  LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ReferenceLine, ResponsiveContainer, Legend
-} = Recharts;
 
 const BENCHMARK = 8;
-const MONTHS = ["Nov '25", "Dec '25", "Jan '26", "Feb '26", "Mar '26", "Apr '26*"];
+const MONTHS = ["Nov '25","Dec '25","Jan '26","Feb '26","Mar '26","Apr '26*"];
 const MONTH_KEYS = ["nov25","dec25","jan26","feb26","mar26","apr26"];
-
 const GROUP_RATES = { nov25:4.9, dec25:4.8, jan26:3.8, feb26:4.4, mar26:5.2, apr26:5.2 };
 
 const PHYSICIANS = [
-  { name:"Azer, Michele",        nov25:9.4,  dec25:7.6,  jan26:1.9, feb26:2.3,  mar26:4.7,  apr26:3.2,  cases:{nov25:117,dec25:119,jan26:103,feb26:129,mar26:107,apr26:93}  },
-  { name:"Bendesky, Brad",       nov25:2.3,  dec25:7.4,  jan26:3.6, feb26:2.1,  mar26:5.4,  apr26:7.5,  cases:{nov25:177,dec25:202,jan26:194,feb26:189,mar26:203,apr26:161} },
-  { name:"Bethel, Courtney",     nov25:8.0,  dec25:5.3,  jan26:4.7, feb26:9.1,  mar26:7.5,  apr26:4.8,  cases:{nov25:125,dec25:170,jan26:129,feb26:143,mar26:199,apr26:126} },
-  { name:"Bianchi, Pollianne",   nov25:3.2,  dec25:7.7,  jan26:3.6, feb26:4.4,  mar26:5.3,  apr26:10.3, cases:{nov25:155,dec25:182,jan26:192,feb26:206,mar26:209,apr26:97}  },
-  { name:"Canter, Danielle",     nov25:0,    dec25:0,    jan26:0,   feb26:23.5, mar26:23.5, apr26:0,    cases:{nov25:13, dec25:14, jan26:14, feb26:17, mar26:17, apr26:17},  lowVol:true },
-  { name:"Casey, Gregory",       nov25:7.7,  dec25:6.1,  jan26:9.1, feb26:7.1,  mar26:9.4,  apr26:16.0, cases:{nov25:182,dec25:165,jan26:164,feb26:154,mar26:212,apr26:25}  },
-  { name:"Disandro, Daniel",     nov25:2.0,  dec25:1.5,  jan26:0.5, feb26:0.6,  mar26:3.1,  apr26:0.9,  cases:{nov25:151,dec25:196,jan26:194,feb26:156,mar26:159,apr26:111} },
-  { name:"Dollard, Denis",       nov25:1.5,  dec25:3.6,  jan26:6.5, feb26:4.0,  mar26:3.2,  apr26:2.4,  cases:{nov25:134,dec25:110,jan26:123,feb26:126,mar26:125,apr26:84}  },
-  { name:"Gejer, Wendymarie",    nov25:8.7,  dec25:4.0,  jan26:6.1, feb26:5.1,  mar26:4.1,  apr26:5.6,  cases:{nov25:115,dec25:100,jan26:114,feb26:98, mar26:122,apr26:90}  },
-  { name:"Hand, Steven",         nov25:7.1,  dec25:3.0,  jan26:4.3, feb26:3.2,  mar26:7.1,  apr26:6.1,  cases:{nov25:168,dec25:166,jan26:164,feb26:190,mar26:170,apr26:131} },
-  { name:"Jain, Sechin",         nov25:7.0,  dec25:7.9,  jan26:5.3, feb26:12.5, mar26:8.2,  apr26:6.8,  cases:{nov25:86, dec25:38, jan26:57, feb26:24, mar26:61, apr26:44}  },
-  { name:"Kleinberg, Christopher",nov25:null,dec25:null, jan26:null,feb26:10.3, mar26:6.7,  apr26:8.3,  cases:{nov25:null,dec25:null,jan26:null,feb26:29,mar26:75,apr26:48} },
-  { name:"Krass, Samuel",         nov25:1.4, dec25:7.8,  jan26:2.1, feb26:5.4,  mar26:5.8,  apr26:6.7,  cases:{nov25:71, dec25:51, jan26:48, feb26:92, mar26:104,apr26:90}  },
-  { name:"Kulp, Kari",            nov25:0,   dec25:11.1, jan26:2.6, feb26:3.6,  mar26:4.2,  apr26:4.2,  cases:{nov25:24, dec25:27, jan26:38, feb26:28, mar26:24, apr26:24},  lowVol:true },
-  { name:"Lehman, Curtis",        nov25:6.1, dec25:5.2,  jan26:5.5, feb26:5.7,  mar26:5.0,  apr26:4.6,  cases:{nov25:229,dec25:271,jan26:272,feb26:230,mar26:202,apr26:153} },
-  { name:"Lutz, Ronald",          nov25:7.1, dec25:7.5,  jan26:5.1, feb26:6.8,  mar26:4.1,  apr26:3.3,  cases:{nov25:182,dec25:173,jan26:175,feb26:176,mar26:218,apr26:121} },
-  { name:"Makopoulos, John",      nov25:0.5, dec25:1.0,  jan26:0.9, feb26:2.3,  mar26:2.2,  apr26:1.1,  cases:{nov25:189,dec25:209,jan26:212,feb26:215,mar26:223,apr26:177} },
-  { name:"Urban, Colleen",        nov25:null,dec25:null, jan26:null,feb26:null,  mar26:null, apr26:6.4,  cases:{nov25:null,dec25:null,jan26:null,feb26:null,mar26:null,apr26:110} },
-  { name:"Yoon, Russell",         nov25:1.1, dec25:0.8,  jan26:0.7, feb26:0,    mar26:1.5,  apr26:7.5,  cases:{nov25:93, dec25:126,jan26:138,feb26:128,mar26:130,apr26:106} },
+  { name:"Azer, Michele",          nov25:9.4,  dec25:7.6,  jan26:1.9, feb26:2.3,  mar26:4.7,  apr26:3.2,  cases:{nov25:117,dec25:119,jan26:103,feb26:129,mar26:107,apr26:93}  },
+  { name:"Bendesky, Brad",         nov25:2.3,  dec25:7.4,  jan26:3.6, feb26:2.1,  mar26:5.4,  apr26:7.5,  cases:{nov25:177,dec25:202,jan26:194,feb26:189,mar26:203,apr26:161} },
+  { name:"Bethel, Courtney",       nov25:8.0,  dec25:5.3,  jan26:4.7, feb26:9.1,  mar26:7.5,  apr26:4.8,  cases:{nov25:125,dec25:170,jan26:129,feb26:143,mar26:199,apr26:126} },
+  { name:"Bianchi, Pollianne",     nov25:3.2,  dec25:7.7,  jan26:3.6, feb26:4.4,  mar26:5.3,  apr26:10.3, cases:{nov25:155,dec25:182,jan26:192,feb26:206,mar26:209,apr26:97}  },
+  { name:"Canter, Danielle",       nov25:0,    dec25:0,    jan26:0,   feb26:23.5, mar26:23.5, apr26:0,    cases:{nov25:13, dec25:14, jan26:14, feb26:17, mar26:17, apr26:17},  lowVol:true },
+  { name:"Casey, Gregory",         nov25:7.7,  dec25:6.1,  jan26:9.1, feb26:7.1,  mar26:9.4,  apr26:16.0, cases:{nov25:182,dec25:165,jan26:164,feb26:154,mar26:212,apr26:25}  },
+  { name:"Disandro, Daniel",       nov25:2.0,  dec25:1.5,  jan26:0.5, feb26:0.6,  mar26:3.1,  apr26:0.9,  cases:{nov25:151,dec25:196,jan26:194,feb26:156,mar26:159,apr26:111} },
+  { name:"Dollard, Denis",         nov25:1.5,  dec25:3.6,  jan26:6.5, feb26:4.0,  mar26:3.2,  apr26:2.4,  cases:{nov25:134,dec25:110,jan26:123,feb26:126,mar26:125,apr26:84}  },
+  { name:"Gejer, Wendymarie",      nov25:8.7,  dec25:4.0,  jan26:6.1, feb26:5.1,  mar26:4.1,  apr26:5.6,  cases:{nov25:115,dec25:100,jan26:114,feb26:98, mar26:122,apr26:90}  },
+  { name:"Hand, Steven",           nov25:7.1,  dec25:3.0,  jan26:4.3, feb26:3.2,  mar26:7.1,  apr26:6.1,  cases:{nov25:168,dec25:166,jan26:164,feb26:190,mar26:170,apr26:131} },
+  { name:"Jain, Sechin",           nov25:7.0,  dec25:7.9,  jan26:5.3, feb26:12.5, mar26:8.2,  apr26:6.8,  cases:{nov25:86, dec25:38, jan26:57, feb26:24, mar26:61, apr26:44}  },
+  { name:"Kleinberg, Christopher", nov25:null, dec25:null, jan26:null,feb26:10.3, mar26:6.7,  apr26:8.3,  cases:{nov25:null,dec25:null,jan26:null,feb26:29,mar26:75,apr26:48}  },
+  { name:"Krass, Samuel",          nov25:1.4,  dec25:7.8,  jan26:2.1, feb26:5.4,  mar26:5.8,  apr26:6.7,  cases:{nov25:71, dec25:51, jan26:48, feb26:92, mar26:104,apr26:90}  },
+  { name:"Kulp, Kari",             nov25:0,    dec25:11.1, jan26:2.6, feb26:3.6,  mar26:4.2,  apr26:4.2,  cases:{nov25:24, dec25:27, jan26:38, feb26:28, mar26:24, apr26:24},  lowVol:true },
+  { name:"Lehman, Curtis",         nov25:6.1,  dec25:5.2,  jan26:5.5, feb26:5.7,  mar26:5.0,  apr26:4.6,  cases:{nov25:229,dec25:271,jan26:272,feb26:230,mar26:202,apr26:153} },
+  { name:"Lutz, Ronald",           nov25:7.1,  dec25:7.5,  jan26:5.1, feb26:6.8,  mar26:4.1,  apr26:3.3,  cases:{nov25:182,dec25:173,jan26:175,feb26:176,mar26:218,apr26:121} },
+  { name:"Makopoulos, John",       nov25:0.5,  dec25:1.0,  jan26:0.9, feb26:2.3,  mar26:2.2,  apr26:1.1,  cases:{nov25:189,dec25:209,jan26:212,feb26:215,mar26:223,apr26:177} },
+  { name:"Urban, Colleen",         nov25:null, dec25:null, jan26:null,feb26:null,  mar26:null, apr26:6.4,  cases:{nov25:null,dec25:null,jan26:null,feb26:null,mar26:null,apr26:110} },
+  { name:"Yoon, Russell",          nov25:1.1,  dec25:0.8,  jan26:0.7, feb26:0,    mar26:1.5,  apr26:7.5,  cases:{nov25:93, dec25:126,jan26:138,feb26:128,mar26:130,apr26:106} },
 ];
 
-const STATUS_COLORS = {
-  strong: { bg:"#0a1f0a", border:"#1a5a32", text:"#4ade80", label:"Strong" },
-  watch:  { bg:"#1a1a08", border:"#4a4a10", text:"#facc15", label:"Developing" },
-  needs:  { bg:"#1f0a0a", border:"#5a1a1a", text:"#f87171", label:"Needs Attn" },
+const LINE_COLORS = ["#e63946","#2a9d8f","#e9c46a","#f4a261","#4cc9f0","#c77dff",
+                     "#06d6a0","#fb8500","#8ecae6","#90be6d","#577590","#b5838d",
+                     "#e76f51","#48cae4","#f9c74f","#264653","#6d6875"];
+
+const STATUS_CFG = {
+  strong:{ bg:"#0a1f0a", border:"#1a5a32", text:"#4ade80", label:"Strong"    },
+  watch: { bg:"#1a1a08", border:"#4a4a10", text:"#facc15", label:"Developing"},
+  needs: { bg:"#1f0a0a", border:"#5a1a1a", text:"#f87171", label:"Needs Attn"},
 };
-const TREND_ICONS  = { up:"↑", down:"↓", flat:"→" };
-const TREND_COLORS = { up:"#4ade80", down:"#f87171", flat:"#94a3b8" };
-const LINE_COLORS  = ["#e63946","#2a9d8f","#e9c46a","#f4a261","#4cc9f0","#c77dff",
-                      "#06d6a0","#fb8500","#8ecae6","#90be6d","#577590","#b5838d",
-                      "#e76f51","#48cae4","#f9c74f","#264653","#6d6875"];
 
-function getStatus(p) {
-  const vals = MONTH_KEYS.map(k => p[k]).filter(v => v !== null);
-  const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
-  if (avg >= BENCHMARK) return "strong";
-  if (avg >= 5) return "watch";
-  return "needs";
-}
-function getTrend(p) {
-  const r = [p.jan26, p.feb26, p.mar26].filter(v => v !== null);
-  if (r.length < 2) return "flat";
-  const d = r[r.length-1] - r[0];
-  if (d > 1.5) return "up";
-  if (d < -1.5) return "down";
-  return "flat";
-}
-function getAvg(p) {
-  const vals = MONTH_KEYS.map(k => p[k]).filter(v => v !== null);
-  if (!vals.length) return null;
-  return (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1);
-}
-function cellColor(v) {
-  if (v === null) return "#334155";
-  if (v >= BENCHMARK) return "#4ade80";
-  if (v >= 5) return "#facc15";
-  return "#f87171";
-}
+function cellColor(v){ if(v===null||v===undefined)return"#334155"; if(v>=BENCHMARK)return"#4ade80"; if(v>=5)return"#facc15"; return"#f87171"; }
+function getStatus(p){ const vs=MONTH_KEYS.map(k=>p[k]).filter(v=>v!==null&&v!==undefined); if(!vs.length)return"needs"; const a=vs.reduce((s,v)=>s+v,0)/vs.length; return a>=BENCHMARK?"strong":a>=5?"watch":"needs"; }
+function getTrend(p){ const r=[p.jan26,p.feb26,p.mar26].filter(v=>v!==null&&v!==undefined); if(r.length<2)return"flat"; const d=r[r.length-1]-r[0]; return d>1.5?"up":d<-1.5?"down":"flat"; }
+function getAvg(p){ const vs=MONTH_KEYS.map(k=>p[k]).filter(v=>v!==null&&v!==undefined); if(!vs.length)return null; return(vs.reduce((s,v)=>s+v,0)/vs.length).toFixed(1); }
+function trendIcon(t){ return t==="up"?"↑":t==="down"?"↓":"→"; }
+function trendColor(t){ return t==="up"?"#4ade80":t==="down"?"#f87171":"#94a3b8"; }
 
-// ── Scenario Calculator data ──────────────────────────────────────────────
-// March 2026 actuals: total physician cases from Volume Group row = ~1,983
-// total CC encounters inferred from 5.2% × cases
-// We'll use each physician's actual march cases and actual CC count
-function marchCC(p) {
-  if (p.mar26 === null || p.cases.mar26 === null) return 0;
-  return Math.round(p.mar26 / 100 * p.cases.mar26);
+/* ── SVG Line Chart (no external deps) ── */
+function SvgChart({ data, lines, yMax=14, height=240 }) {
+  const [tip, setTip] = useState(null);
+  const PL=44, PR=24, PT=12, PB=38;
+  const VW=900, VH=height;
+  const cW=VW-PL-PR, cH=VH-PT-PB;
+  const xS = i => PL + (data.length<2?cW/2:i/(data.length-1)*cW);
+  const yS = v => PT + cH - Math.min(Math.max(v/yMax,0),1)*cH;
+  const yTicks = [];
+  for(let v=0;v<=yMax;v+=2) yTicks.push(v);
+
+  return (
+    <div style={{position:"relative"}}>
+      <svg viewBox={`0 0 ${VW} ${VH}`} style={{width:"100%",display:"block"}} onMouseLeave={()=>setTip(null)}>
+        {yTicks.map(v=>(
+          <g key={v}>
+            <line x1={PL} x2={VW-PR} y1={yS(v)} y2={yS(v)} stroke="#1a2a3a" strokeWidth={1}/>
+            <text x={PL-6} y={yS(v)+4} textAnchor="end" fill="#475569" fontSize={10}>{v}%</text>
+          </g>
+        ))}
+        <line x1={PL} x2={VW-PR} y1={yS(BENCHMARK)} y2={yS(BENCHMARK)} stroke="#facc15" strokeWidth={1.5} strokeDasharray="6 4"/>
+        <text x={VW-PR+4} y={yS(BENCHMARK)+4} fill="#facc15" fontSize={9}>8%</text>
+        {data.map((d,i)=>(
+          <text key={i} x={xS(i)} y={VH-4} textAnchor="middle" fill={d.partial?"#facc15":"#475569"} fontSize={9}>{d.month}</text>
+        ))}
+        {lines.map((ln,li)=>{
+          const pts=data.map((d,i)=>({x:xS(i),y:yS(d[ln.key]??-999),v:d[ln.key],m:d.month,ok:d[ln.key]!==null&&d[ln.key]!==undefined}));
+          const segs=[]; let seg=[];
+          pts.forEach(p=>{if(p.ok){seg.push(p);}else{if(seg.length){segs.push(seg);seg=[];}}});
+          if(seg.length)segs.push(seg);
+          return (
+            <g key={li}>
+              {segs.map((s,si)=>(
+                <polyline key={si} points={s.map(p=>`${p.x},${p.y}`).join(" ")} fill="none" stroke={ln.color} strokeWidth={ln.bold?3:1.5} opacity={0.9}/>
+              ))}
+              {pts.filter(p=>p.ok).map((p,pi)=>(
+                <circle key={pi} cx={p.x} cy={p.y} r={5} fill={ln.color} style={{cursor:"crosshair"}}
+                  onMouseEnter={()=>setTip({x:p.x,y:p.y,month:p.m,label:ln.label,val:p.v})}/>
+              ))}
+            </g>
+          );
+        })}
+      </svg>
+      {tip&&(
+        <div style={{position:"absolute",top:Math.max(tip.y-50,0),left:Math.min((tip.x/900*100)+2,65)+"%",
+          background:"#0f1923",border:"1px solid #2a3a4a",borderRadius:8,padding:"8px 12px",
+          fontSize:12,color:"#e2e8f0",pointerEvents:"none",whiteSpace:"nowrap",zIndex:20}}>
+          <div style={{color:"#475569",marginBottom:2}}>{tip.month}</div>
+          <div style={{fontFamily:"'DM Mono',monospace",fontWeight:600}}>{tip.label}: {tip.val}%</div>
+        </div>
+      )}
+    </div>
+  );
 }
-const MAR_TOTAL_CASES = PHYSICIANS.reduce((s,p) => s + (p.cases.mar26 || 0), 0);
 
 function App() {
-  const [tab, setTab]       = useState("overview");
+  const [tab,    setTab]    = useState("overview");
   const [filter, setFilter] = useState("all");
   const [sortBy, setSortBy] = useState("mar26");
-  const [selDr, setSelDr]   = useState("");
-  const [floor, setFloor]   = useState(5);
+  const [selDr,  setSelDr]  = useState("");
+  const [floor,  setFloor]  = useState(5);
 
-  // Group trend data
-  const groupData = MONTH_KEYS.map((k,i) => ({
-    month: MONTHS[i], rate: GROUP_RATES[k], partial: k==="apr26"
-  }));
+  const groupData = MONTH_KEYS.map((k,i)=>({month:MONTHS[i],rate:GROUP_RATES[k],partial:k==="apr26"}));
 
-  // Leaderboard — March, ≥20 cases, exclude Canter (vol too low to be meaningful)
   const leaderboard = [...PHYSICIANS]
-    .filter(p => p.mar26 !== null && (p.cases.mar26||0) >= 20 && !p.lowVol)
-    .sort((a,b) => b.mar26 - a.mar26);
+    .filter(p=>p.mar26!==null&&(p.cases.mar26||0)>=20&&!p.lowVol)
+    .sort((a,b)=>b.mar26-a.mar26);
 
-  // Trend chart physicians
   const chartDrs = selDr
-    ? PHYSICIANS.filter(p => p.name === selDr)
-    : PHYSICIANS.filter(p => (p.cases.mar26||0) >= 30);
-  const lineData = MONTH_KEYS.map((k,i) => {
-    const obj = { month: MONTHS[i] };
-    chartDrs.forEach(p => { if (p[k] !== null) obj[p.name.split(",")[0]] = p[k]; });
+    ? PHYSICIANS.filter(p=>p.name===selDr)
+    : PHYSICIANS.filter(p=>(p.cases.mar26||0)>=30&&!p.lowVol);
+  const trendData = MONTH_KEYS.map((k,i)=>{
+    const obj={month:MONTHS[i],partial:k==="apr26"};
+    chartDrs.forEach(p=>{obj[p.name]=p[k];});
     return obj;
   });
 
-  // Table
-  const tableRows = [...PHYSICIANS]
-    .filter(p => filter==="all" || getStatus(p)===filter)
-    .sort((a,b) => (b[sortBy]??-1) - (a[sortBy]??-1));
+  const tableRows=[...PHYSICIANS]
+    .filter(p=>filter==="all"||getStatus(p)===filter)
+    .sort((a,b)=>(b[sortBy]??-1)-(a[sortBy]??-1));
 
-  // Scenario calculator
-  const scenarioData = PHYSICIANS.map(p => {
-    const actual = marchCC(p);
-    const cases  = p.cases.mar26 || 0;
-    const actualRate = p.mar26 || 0;
-    const flooredRate = Math.max(actualRate, floor);
-    const flooredCC   = Math.round(flooredRate / 100 * cases);
-    const gain = flooredCC - actual;
-    return { name: p.name.split(",")[0], cases, actualRate, flooredRate, actual, flooredCC, gain };
-  });
-  const totalActualCC   = scenarioData.reduce((s,d)=>s+d.actual,0);
-  const totalFlooredCC  = scenarioData.reduce((s,d)=>s+d.flooredCC,0);
-  const totalGain       = totalFlooredCC - totalActualCC;
-  const newGroupRate    = MAR_TOTAL_CASES > 0 ? ((totalFlooredCC/MAR_TOTAL_CASES)*100).toFixed(1) : "—";
-  const revenueGain     = totalGain * 162;
+  const MAR_TOTAL=PHYSICIANS.reduce((s,p)=>s+(p.cases.mar26||0),0);
+  const scenarioData=PHYSICIANS.map(p=>{
+    const cases=p.cases.mar26||0;
+    const ar=p.mar26||0;
+    const actual=Math.round(ar/100*cases);
+    const fr=Math.max(ar,floor);
+    const proj=Math.round(fr/100*cases);
+    return{name:p.name.split(",")[0],cases,ar,fr,actual,proj,gain:proj-actual};
+  }).sort((a,b)=>b.gain-a.gain);
+  const totActual=scenarioData.reduce((s,d)=>s+d.actual,0);
+  const totProj=scenarioData.reduce((s,d)=>s+d.proj,0);
+  const totGain=totProj-totActual;
+  const newRate=MAR_TOTAL>0?((totProj/MAR_TOTAL)*100).toFixed(1):"—";
+  const revGain=totGain*162;
 
-  const TABS = [
-    { id:"overview",   label:"Overview"          },
-    { id:"leaderboard",label:"Mar Leaderboard"   },
-    { id:"trends",     label:"Physician Trends"  },
-    { id:"scenario",   label:"Scenario Calc"     },
-    { id:"table",      label:"Full Data Table"   },
+  const TABS=[
+    {id:"overview",   label:"Overview"},
+    {id:"leaderboard",label:"Mar Leaderboard"},
+    {id:"trends",     label:"Physician Trends"},
+    {id:"scenario",   label:"Scenario Calc"},
+    {id:"table",      label:"Full Data Table"},
   ];
 
-  return (
-    <div style={{minHeight:"100vh", display:"flex", flexDirection:"column"}}>
+  const S=(style)=>style; // passthrough for readability
 
-      {/* ── Header ── */}
-      <div style={{background:"linear-gradient(180deg,#0d1a26 0%,#080e14 100%)", borderBottom:"1px solid #1a2a3a", padding:"18px 32px", display:"flex", alignItems:"center", justifyContent:"space-between"}}>
-        <div style={{display:"flex", alignItems:"center", gap:14}}>
-          <div style={{width:40, height:40, background:"linear-gradient(135deg,#c8102e,#7b0019)", borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, boxShadow:"0 0 20px rgba(200,16,46,.3)"}}>⚕</div>
+  return (
+    <div style={{minHeight:"100vh",display:"flex",flexDirection:"column"}}>
+
+      {/* Header */}
+      <div style={{background:"linear-gradient(180deg,#0d1a26,#080e14)",borderBottom:"1px solid #1a2a3a",padding:"18px 32px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <div style={{display:"flex",alignItems:"center",gap:14}}>
+          <div style={{width:40,height:40,background:"linear-gradient(135deg,#c8102e,#7b0019)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,boxShadow:"0 0 20px rgba(200,16,46,.3)"}}>⚕</div>
           <div>
-            <div style={{fontSize:18, fontWeight:700, color:"#f1f5f9", letterSpacing:"-0.3px"}}>CritCareIQ</div>
-            <div style={{fontSize:11, color:"#475569", letterSpacing:"0.5px"}}>MERCY FITZGERALD · O52 · PHYSICIAN CC RATES ONLY</div>
+            <div style={{fontSize:18,fontWeight:700,color:"#f1f5f9",letterSpacing:"-0.3px"}}>CritCareIQ</div>
+            <div style={{fontSize:11,color:"#475569",letterSpacing:"0.5px"}}>MERCY FITZGERALD · O52 · PHYSICIAN CC RATES ONLY</div>
           </div>
         </div>
-        <div style={{display:"flex", gap:10}}>
-          <span style={{background:"#0d1f0d", border:"1px solid #1a4a1a", borderRadius:6, padding:"5px 12px", fontSize:11, color:"#4ade80", letterSpacing:"1px"}}>NOV 2025 – APR 2026</span>
-          <span style={{background:"#1a0d0d", border:"1px solid #4a1a1a", borderRadius:6, padding:"5px 12px", fontSize:11, color:"#f87171", letterSpacing:"1px"}}>TARGET: 8–10%</span>
+        <div style={{display:"flex",gap:10}}>
+          <span style={{background:"#0d1f0d",border:"1px solid #1a4a1a",borderRadius:6,padding:"5px 12px",fontSize:11,color:"#4ade80",letterSpacing:"1px"}}>NOV 2025 – APR 2026</span>
+          <span style={{background:"#1a0d0d",border:"1px solid #4a1a1a",borderRadius:6,padding:"5px 12px",fontSize:11,color:"#f87171",letterSpacing:"1px"}}>TARGET: 8–10%</span>
         </div>
       </div>
 
-      {/* ── Nav ── */}
-      <div style={{display:"flex", borderBottom:"1px solid #1a2a3a", background:"#0a1520", padding:"0 32px"}}>
-        {TABS.map(t => (
+      {/* Nav */}
+      <div style={{display:"flex",borderBottom:"1px solid #1a2a3a",background:"#0a1520",padding:"0 32px",overflowX:"auto"}}>
+        {TABS.map(t=>(
           <button key={t.id} className="tab-btn" onClick={()=>setTab(t.id)}
-            style={{padding:"13px 18px", fontSize:13, fontWeight:500,
-              color: tab===t.id ? "#e2e8f0" : "#475569",
-              borderBottom: tab===t.id ? "2px solid #c8102e" : "2px solid transparent",
-              marginBottom:-1}}>
+            style={{padding:"13px 18px",fontSize:13,fontWeight:500,whiteSpace:"nowrap",
+              color:tab===t.id?"#e2e8f0":"#475569",
+              borderBottom:tab===t.id?"2px solid #c8102e":"2px solid transparent",marginBottom:-1}}>
             {t.label}
           </button>
         ))}
       </div>
 
-      {/* ── Body ── */}
-      <div style={{padding:"28px 32px", maxWidth:1300, margin:"0 auto", width:"100%", flex:1}}>
+      <div style={{padding:"28px 32px",maxWidth:1300,margin:"0 auto",width:"100%",flex:1}}>
 
-        {/* ════ OVERVIEW ════ */}
-        {tab==="overview" && <>
-          {/* KPI cards */}
-          <div style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:16, marginBottom:24}}>
-            {[
-              {label:"Mar '26 Physician CC Rate", value:"5.2%", sub:"↑ from 3.8% Jan low",       color:"#4ade80", bg:"#0a1f0a", border:"#1a4a1a"},
-              {label:"National EM Benchmark",      value:"8–10%",sub:"Gap: ~3pts from target",    color:"#facc15", bg:"#1a1a08", border:"#3a3a10"},
-              {label:"Est. Missed Rev / Month",    value:"~$20K",sub:"vs. 8% benchmark",           color:"#f87171", bg:"#1a0808", border:"#3a1010"},
-              {label:"Annualized Opportunity",     value:"~$240K",sub:"@ $162/encounter (Medicare)",color:"#60a5fa",bg:"#08101a", border:"#10203a"},
-            ].map((c,i)=>(
-              <div key={i} style={{background:c.bg, border:`1px solid ${c.border}`, borderRadius:12, padding:20}}>
-                <div style={{fontSize:11, color:"#475569", letterSpacing:"1px", textTransform:"uppercase", marginBottom:8}}>{c.label}</div>
-                <div style={{fontSize:28, fontWeight:700, color:c.color, letterSpacing:"-1px", marginBottom:4}}>{c.value}</div>
-                <div style={{fontSize:12, color:"#64748b"}}>{c.sub}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Group trend chart */}
-          <div style={{background:"#0a1520", border:"1px solid #1a2a3a", borderRadius:12, padding:24, marginBottom:24}}>
-            <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16}}>
-              <div>
-                <div style={{fontSize:14, fontWeight:600, color:"#e2e8f0"}}>Physician CC Rate — Group Trend</div>
-                <div style={{fontSize:12, color:"#475569", marginTop:2}}>Volume Group – Physicians row only · APPs fully excluded</div>
-              </div>
-              <span style={{background:"#0d1a0d", border:"1px solid #1a3a1a", borderRadius:6, padding:"4px 12px", fontSize:11, color:"#4ade80"}}>★ Email series launched Mar '26</span>
-            </div>
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={groupData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1a2a3a" />
-                <XAxis dataKey="month" tick={{fill:"#475569",fontSize:12}} axisLine={false} tickLine={false} />
-                <YAxis tick={{fill:"#475569",fontSize:12}} axisLine={false} tickLine={false} domain={[0,12]} tickFormatter={v=>`${v}%`} />
-                <Tooltip contentStyle={{background:"#0f1923",border:"1px solid #2a3a4a",borderRadius:8,fontSize:13}}
-                  formatter={(v,n,props)=>[`${v}%${props.payload?.partial?" ⚑ partial":""}`,n]} />
-                <ReferenceLine y={8} stroke="#facc15" strokeDasharray="4 4"
-                  label={{value:"8% target",fill:"#facc15",fontSize:11,position:"insideTopRight"}} />
-                <Line type="monotone" dataKey="rate" name="Physician CC%" stroke="#c8102e" strokeWidth={2.5}
-                  dot={(props)=>{
-                    const {cx,cy,payload}=props;
-                    return <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={payload.partial?5:4}
-                      fill={payload.partial?"#facc15":"#c8102e"}
-                      stroke={payload.partial?"#facc15":"none"} strokeWidth={2} />;
-                  }} />
-              </LineChart>
-            </ResponsiveContainer>
-            <div style={{display:"flex", gap:20, marginTop:10, fontSize:11, color:"#475569", flexWrap:"wrap"}}>
-              <span>● Red = physician CC rate</span>
-              <span style={{color:"#facc15"}}>◉ Yellow dot = partial (Apr '26, 73.9% billed)</span>
-              <span style={{color:"#facc15"}}>— — Yellow = 8% benchmark</span>
-            </div>
-          </div>
-
-          {/* Status summary cards */}
-          <div style={{display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16}}>
-            {["strong","watch","needs"].map(s=>{
-              const cfg=STATUS_COLORS[s];
-              const docs=PHYSICIANS.filter(p=>getStatus(p)===s);
-              return (
-                <div key={s} style={{background:cfg.bg,border:`1px solid ${cfg.border}`,borderRadius:12,padding:20}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-                    <div style={{fontSize:13,fontWeight:600,color:cfg.text}}>{cfg.label}</div>
-                    <span style={{background:cfg.border,borderRadius:20,padding:"2px 10px",fontSize:12,color:cfg.text,fontWeight:600}}>{docs.length}</span>
-                  </div>
-                  {docs.map(p=>(
-                    <div key={p.name} style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"#94a3b8",marginBottom:6,paddingBottom:6,borderBottom:"1px solid rgba(255,255,255,.04)"}}>
-                      <span>{p.name.split(",")[0]}</span>
-                      <span style={{color:cfg.text,fontWeight:500,fontFamily:"'DM Mono',monospace"}}>
-                        {p.mar26!==null?`${p.mar26}% Mar`:"—"}
-                        <span style={{marginLeft:6,color:TREND_COLORS[getTrend(p)]}}>{TREND_ICONS[getTrend(p)]}</span>
-                      </span>
-                    </div>
-                  ))}
+        {/* OVERVIEW */}
+        {tab==="overview"&&(
+          <div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16,marginBottom:24}}>
+              {[
+                {label:"Mar '26 Physician CC Rate",value:"5.2%",sub:"↑ from 3.8% Jan low",color:"#4ade80",bg:"#0a1f0a",border:"#1a4a1a"},
+                {label:"National EM Benchmark",value:"8–10%",sub:"Gap: ~3pts from target",color:"#facc15",bg:"#1a1a08",border:"#3a3a10"},
+                {label:"Est. Missed Rev / Month",value:"~$20K",sub:"vs. 8% benchmark",color:"#f87171",bg:"#1a0808",border:"#3a1010"},
+                {label:"Annualized Opportunity",value:"~$240K",sub:"@ $162/encounter (Medicare)",color:"#60a5fa",bg:"#08101a",border:"#10203a"},
+              ].map((c,i)=>(
+                <div key={i} style={{background:c.bg,border:`1px solid ${c.border}`,borderRadius:12,padding:20}}>
+                  <div style={{fontSize:11,color:"#475569",letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>{c.label}</div>
+                  <div style={{fontSize:28,fontWeight:700,color:c.color,letterSpacing:"-1px",marginBottom:4}}>{c.value}</div>
+                  <div style={{fontSize:12,color:"#64748b"}}>{c.sub}</div>
                 </div>
-              );
-            })}
-          </div>
-        </>}
+              ))}
+            </div>
 
-        {/* ════ LEADERBOARD ════ */}
-        {tab==="leaderboard" && <>
-          <div style={{marginBottom:20}}>
-            <div style={{fontSize:16,fontWeight:600,color:"#e2e8f0",marginBottom:4}}>March 2026 Physician Leaderboard</div>
-            <div style={{fontSize:12,color:"#475569"}}>Physicians with ≥20 cases · Ranked by CC% · Benchmark: 8–10% · Low-volume physicians excluded</div>
-          </div>
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            {leaderboard.map((p,i)=>{
-              const pct=p.mar26;
-              const barW=Math.min((pct/14)*100,100);
-              const bc=pct>=BENCHMARK?"#4ade80":pct>=5?"#facc15":"#f87171";
-              return (
-                <div key={p.name} style={{background:"#0a1520",border:`1px solid ${pct>=BENCHMARK?"#1a4a1a":"#1a2a3a"}`,borderRadius:10,padding:"16px 20px",display:"flex",alignItems:"center",gap:16}}>
-                  <div style={{width:32,height:32,borderRadius:"50%",flexShrink:0,
-                    background:i===0?"linear-gradient(135deg,#f59e0b,#d97706)":i===1?"linear-gradient(135deg,#94a3b8,#64748b)":i===2?"linear-gradient(135deg,#b45309,#92400e)":"#1a2a3a",
-                    display:"flex",alignItems:"center",justifyContent:"center",
-                    fontSize:13,fontWeight:700,color:i<3?"#fff":"#475569"}}>
-                    {i+1}
+            <div style={{background:"#0a1520",border:"1px solid #1a2a3a",borderRadius:12,padding:24,marginBottom:24}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
+                <div>
+                  <div style={{fontSize:14,fontWeight:600,color:"#e2e8f0"}}>Physician CC Rate — Group Trend</div>
+                  <div style={{fontSize:12,color:"#475569",marginTop:2}}>Volume Group – Physicians row only · APPs excluded</div>
+                </div>
+                <span style={{background:"#0d1a0d",border:"1px solid #1a3a1a",borderRadius:6,padding:"4px 12px",fontSize:11,color:"#4ade80",whiteSpace:"nowrap"}}>★ Email series launched Mar '26</span>
+              </div>
+              <SvgChart data={groupData} lines={[{key:"rate",label:"Physician CC%",color:"#c8102e",bold:true}]} yMax={12} height={220}/>
+              <div style={{display:"flex",gap:20,marginTop:8,fontSize:11,color:"#475569",flexWrap:"wrap"}}>
+                <span>● Red = physician CC rate</span>
+                <span style={{color:"#facc15"}}>◉ Yellow = 8% benchmark line</span>
+                <span style={{color:"#facc15"}}>* Apr '26 partial (73.9% billed)</span>
+              </div>
+            </div>
+
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16}}>
+              {["strong","watch","needs"].map(s=>{
+                const cfg=STATUS_CFG[s];
+                const docs=PHYSICIANS.filter(p=>getStatus(p)===s);
+                return(
+                  <div key={s} style={{background:cfg.bg,border:`1px solid ${cfg.border}`,borderRadius:12,padding:20}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+                      <div style={{fontSize:13,fontWeight:600,color:cfg.text}}>{cfg.label}</div>
+                      <span style={{background:cfg.border,borderRadius:20,padding:"2px 10px",fontSize:12,color:cfg.text,fontWeight:600}}>{docs.length}</span>
+                    </div>
+                    {docs.map(p=>{
+                      const tr=getTrend(p);
+                      return(
+                        <div key={p.name} style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"#94a3b8",marginBottom:6,paddingBottom:6,borderBottom:"1px solid rgba(255,255,255,.04)"}}>
+                          <span>{p.name.split(",")[0]}</span>
+                          <span style={{color:cfg.text,fontWeight:500,fontFamily:"'DM Mono',monospace"}}>
+                            {p.mar26!==null?`${p.mar26}% Mar`:"—"}
+                            <span style={{marginLeft:6,color:trendColor(tr)}}>{trendIcon(tr)}</span>
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
-                  <div style={{flex:1}}>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                      <div style={{fontSize:14,fontWeight:600,color:"#e2e8f0"}}>{p.name}</div>
-                      <div style={{display:"flex",alignItems:"center",gap:10}}>
-                        <span style={{fontSize:11,color:"#475569"}}>{p.cases.mar26} cases</span>
-                        <span style={{fontSize:20,fontWeight:700,color:bc,fontFamily:"'DM Mono',monospace"}}>{pct}%</span>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* LEADERBOARD */}
+        {tab==="leaderboard"&&(
+          <div>
+            <div style={{marginBottom:20}}>
+              <div style={{fontSize:16,fontWeight:600,color:"#e2e8f0",marginBottom:4}}>March 2026 Physician Leaderboard</div>
+              <div style={{fontSize:12,color:"#475569"}}>Ranked by CC% · ≥20 cases · Benchmark: 8–10% · Low-volume excluded</div>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {leaderboard.map((p,i)=>{
+                const pct=p.mar26;
+                const barW=Math.min((pct/14)*100,100);
+                const bc=pct>=BENCHMARK?"#4ade80":pct>=5?"#facc15":"#f87171";
+                return(
+                  <div key={p.name} style={{background:"#0a1520",border:`1px solid ${pct>=BENCHMARK?"#1a4a1a":"#1a2a3a"}`,borderRadius:10,padding:"16px 20px",display:"flex",alignItems:"center",gap:16}}>
+                    <div style={{width:32,height:32,borderRadius:"50%",flexShrink:0,
+                      background:i===0?"linear-gradient(135deg,#f59e0b,#d97706)":i===1?"linear-gradient(135deg,#94a3b8,#64748b)":i===2?"linear-gradient(135deg,#b45309,#92400e)":"#1a2a3a",
+                      display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:i<3?"#fff":"#475569"}}>
+                      {i+1}
+                    </div>
+                    <div style={{flex:1}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                        <div style={{fontSize:14,fontWeight:600,color:"#e2e8f0"}}>{p.name}</div>
+                        <div style={{display:"flex",alignItems:"center",gap:10}}>
+                          <span style={{fontSize:11,color:"#475569"}}>{p.cases.mar26} cases</span>
+                          <span style={{fontSize:20,fontWeight:700,color:bc,fontFamily:"'DM Mono',monospace"}}>{pct}%</span>
+                        </div>
+                      </div>
+                      <div style={{background:"#131e2a",borderRadius:4,height:8,overflow:"hidden"}}>
+                        <div style={{width:`${barW}%`,height:"100%",background:`linear-gradient(90deg,${bc}88,${bc})`,borderRadius:4}}/>
+                      </div>
+                      <div style={{display:"flex",justifyContent:"flex-end",marginTop:4,fontSize:10,color:pct>=BENCHMARK?"#4ade80":"#475569"}}>
+                        {pct>=BENCHMARK?"✓ At benchmark":`${(BENCHMARK-pct).toFixed(1)}% below target`}
                       </div>
                     </div>
-                    <div style={{background:"#131e2a",borderRadius:4,height:8,overflow:"hidden"}}>
-                      <div style={{width:`${barW}%`,height:"100%",background:`linear-gradient(90deg,${bc}88,${bc})`,borderRadius:4}} />
-                    </div>
-                    <div style={{display:"flex",justifyContent:"flex-end",marginTop:4,fontSize:10,color:pct>=BENCHMARK?"#4ade80":"#475569"}}>
-                      {pct>=BENCHMARK?"✓ At benchmark":`${(BENCHMARK-pct).toFixed(1)}% below target`}
-                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* TRENDS */}
+        {tab==="trends"&&(
+          <div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16,flexWrap:"wrap",gap:12}}>
+              <div>
+                <div style={{fontSize:14,fontWeight:600,color:"#e2e8f0"}}>Individual Physician Trends</div>
+                <div style={{fontSize:12,color:"#475569",marginTop:2}}>Default: ≥30 Mar cases · Yellow dashed = 8% target</div>
+              </div>
+              <select value={selDr} onChange={e=>setSelDr(e.target.value)}>
+                <option value="">All (≥30 cases)</option>
+                {PHYSICIANS.map(p=><option key={p.name} value={p.name}>{p.name}</option>)}
+              </select>
+            </div>
+            <div style={{background:"#0a1520",border:"1px solid #1a2a3a",borderRadius:12,padding:24}}>
+              <SvgChart
+                data={trendData}
+                lines={chartDrs.map((p,i)=>({key:p.name,label:p.name.split(",")[0],color:LINE_COLORS[i%LINE_COLORS.length],bold:selDr===p.name}))}
+                yMax={20} height={380}
+              />
+            </div>
+            {!selDr&&(
+              <div style={{marginTop:12,display:"flex",flexWrap:"wrap",gap:"8px 16px"}}>
+                {chartDrs.map((p,i)=>(
+                  <span key={p.name} onClick={()=>setSelDr(p.name)}
+                    style={{fontSize:11,color:LINE_COLORS[i%LINE_COLORS.length],cursor:"pointer"}}>
+                    ● {p.name.split(",")[0]}
+                  </span>
+                ))}
+              </div>
+            )}
+            {selDr&&<button onClick={()=>setSelDr("")} style={{marginTop:12,background:"transparent",border:"1px solid #2a3a4a",borderRadius:6,padding:"6px 14px",color:"#475569",fontSize:12,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>← Show all</button>}
+            <div style={{marginTop:10,fontSize:11,color:"#334155"}}>Apr '26 partial (73.9% billed) — rates may shift as remaining encounters are coded.</div>
+          </div>
+        )}
+
+        {/* SCENARIO */}
+        {tab==="scenario"&&(
+          <div>
+            <div style={{marginBottom:20}}>
+              <div style={{fontSize:16,fontWeight:600,color:"#e2e8f0",marginBottom:4}}>Floor Rate Scenario Calculator</div>
+              <div style={{fontSize:12,color:"#475569"}}>Set a minimum CC% floor — see group rate and revenue impact if no physician bills below it. Based on March 2026 volumes.</div>
+            </div>
+            <div style={{background:"#0a1520",border:"1px solid #1a2a3a",borderRadius:12,padding:24,marginBottom:20}}>
+              <div style={{display:"flex",alignItems:"center",gap:24,marginBottom:20}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:12,color:"#475569",marginBottom:8}}>Minimum physician CC% floor</div>
+                  <input type="range" min={0} max={10} step={0.5} value={floor} onChange={e=>setFloor(parseFloat(e.target.value))}/>
+                  <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#334155",marginTop:4}}>
+                    <span>0%</span><span>5% (group avg)</span><span>8% (benchmark)</span><span>10%</span>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-          <div style={{marginTop:14,fontSize:11,color:"#334155",textAlign:"center"}}>Low-volume physicians (fewer than 20 March cases) excluded due to rate volatility.</div>
-        </>}
-
-        {/* ════ TRENDS ════ */}
-        {tab==="trends" && <>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-            <div>
-              <div style={{fontSize:14,fontWeight:600,color:"#e2e8f0"}}>Individual Physician Trends</div>
-              <div style={{fontSize:12,color:"#475569",marginTop:2}}>Default: physicians with ≥30 Mar cases · Yellow dashed = 8% benchmark</div>
-            </div>
-            <select value={selDr} onChange={e=>setSelDr(e.target.value)}>
-              <option value="">All (≥30 cases)</option>
-              {PHYSICIANS.map(p=><option key={p.name} value={p.name}>{p.name}</option>)}
-            </select>
-          </div>
-          <div style={{background:"#0a1520",border:"1px solid #1a2a3a",borderRadius:12,padding:24}}>
-            <ResponsiveContainer width="100%" height={400}>
-              <LineChart data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1a2a3a" />
-                <XAxis dataKey="month" tick={{fill:"#475569",fontSize:12}} axisLine={false} tickLine={false} />
-                <YAxis tick={{fill:"#475569",fontSize:12}} axisLine={false} tickLine={false} domain={[0,20]} tickFormatter={v=>`${v}%`} />
-                <Tooltip contentStyle={{background:"#0f1923",border:"1px solid #2a3a4a",borderRadius:8,fontSize:12}} formatter={v=>[`${v}%`]} />
-                <ReferenceLine y={8} stroke="#facc15" strokeDasharray="4 4" />
-                <Legend wrapperStyle={{fontSize:11,color:"#64748b"}} />
-                {chartDrs.map((p,i)=>(
-                  <Line key={p.name} type="monotone" dataKey={p.name.split(",")[0]}
-                    stroke={LINE_COLORS[i%LINE_COLORS.length]} strokeWidth={selDr===p.name?3:1.5}
-                    dot={{r:3}} connectNulls />
+                <div style={{textAlign:"center",minWidth:80}}>
+                  <div style={{fontSize:36,fontWeight:700,color:"#c8102e",fontFamily:"'DM Mono',monospace"}}>{floor}%</div>
+                  <div style={{fontSize:11,color:"#475569"}}>floor</div>
+                </div>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12}}>
+                {[
+                  {label:"Current Group Rate",value:"5.2%",color:"#94a3b8"},
+                  {label:"Projected Group Rate",value:`${newRate}%`,color:"#4ade80"},
+                  {label:"Additional CC Bills",value:`+${totGain}`,color:"#facc15"},
+                  {label:"Monthly Revenue Gain",value:`+$${revGain.toLocaleString()}`,color:"#60a5fa"},
+                ].map((c,i)=>(
+                  <div key={i} style={{background:"#0f1923",borderRadius:8,padding:16,textAlign:"center"}}>
+                    <div style={{fontSize:10,color:"#475569",letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>{c.label}</div>
+                    <div style={{fontSize:22,fontWeight:700,color:c.color,fontFamily:"'DM Mono',monospace"}}>{c.value}</div>
+                  </div>
                 ))}
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-          <div style={{marginTop:10,fontSize:11,color:"#334155",textAlign:"center"}}>Apr '26 is partial (73.9% billed) — rates may shift as remaining encounters are coded.</div>
-        </>}
-
-        {/* ════ SCENARIO CALCULATOR ════ */}
-        {tab==="scenario" && <>
-          <div style={{marginBottom:20}}>
-            <div style={{fontSize:16,fontWeight:600,color:"#e2e8f0",marginBottom:4}}>Floor Rate Scenario Calculator</div>
-            <div style={{fontSize:12,color:"#475569"}}>Set a minimum CC% floor — see what the group rate and revenue would look like if no physician billed below it. Based on March 2026 case volumes.</div>
-          </div>
-
-          {/* Slider */}
-          <div style={{background:"#0a1520",border:"1px solid #1a2a3a",borderRadius:12,padding:24,marginBottom:20}}>
-            <div style={{display:"flex",alignItems:"center",gap:20,marginBottom:20}}>
-              <div style={{flex:1}}>
-                <div style={{fontSize:12,color:"#475569",marginBottom:8}}>Minimum physician CC% floor</div>
-                <input type="range" min={0} max={10} step={0.5} value={floor}
-                  onChange={e=>setFloor(parseFloat(e.target.value))}
-                  style={{width:"100%",accentColor:"#c8102e",cursor:"pointer"}} />
-                <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#334155",marginTop:4}}>
-                  <span>0%</span><span>5% (group avg)</span><span>8% (benchmark)</span><span>10%</span>
-                </div>
-              </div>
-              <div style={{textAlign:"center",minWidth:80}}>
-                <div style={{fontSize:36,fontWeight:700,color:"#c8102e",fontFamily:"'DM Mono',monospace"}}>{floor}%</div>
-                <div style={{fontSize:11,color:"#475569"}}>floor</div>
               </div>
             </div>
-
-            {/* Impact summary */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12}}>
-              {[
-                {label:"Current Group Rate", value:"5.2%",         color:"#94a3b8"},
-                {label:"Projected Group Rate",value:`${newGroupRate}%`,color:"#4ade80"},
-                {label:"Additional CC Bills", value:`+${totalGain}`, color:"#facc15"},
-                {label:"Monthly Revenue Gain", value:`+$${revenueGain.toLocaleString()}`, color:"#60a5fa"},
-              ].map((c,i)=>(
-                <div key={i} style={{background:"#0f1923",borderRadius:8,padding:16,textAlign:"center"}}>
-                  <div style={{fontSize:10,color:"#475569",letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>{c.label}</div>
-                  <div style={{fontSize:22,fontWeight:700,color:c.color,fontFamily:"'DM Mono',monospace"}}>{c.value}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Per-physician breakdown */}
-          <div style={{background:"#0a1520",border:"1px solid #1a2a3a",borderRadius:12,padding:20,overflowX:"auto"}}>
-            <div style={{fontSize:13,fontWeight:600,color:"#e2e8f0",marginBottom:14}}>Per-Physician Impact</div>
-            <table>
-              <thead>
-                <tr style={{borderBottom:"1px solid #1a2a3a"}}>
-                  {["Physician","Mar Cases","Actual %","Floor %","Actual CC","Projected CC","Gain"].map(h=>(
-                    <th key={h} style={{textAlign:"left",padding:"8px 12px",fontSize:11,color:"#475569",fontWeight:500,whiteSpace:"nowrap"}}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {scenarioData
-                  .sort((a,b)=>b.gain-a.gain)
-                  .map((d,i)=>(
-                  <tr key={d.name} style={{borderBottom:"1px solid #0f1923",background:i%2===0?"#0a1218":"#080e14"}}>
-                    <td style={{padding:"9px 12px",fontSize:13,color:"#e2e8f0",fontWeight:500}}>{d.name}</td>
-                    <td style={{padding:"9px 12px",fontSize:12,color:"#64748b",fontFamily:"'DM Mono',monospace"}}>{d.cases}</td>
-                    <td style={{padding:"9px 12px",fontSize:12,color:cellColor(d.actualRate),fontFamily:"'DM Mono',monospace"}}>{d.actualRate}%</td>
-                    <td style={{padding:"9px 12px",fontSize:12,color:cellColor(Math.max(d.actualRate,floor)),fontFamily:"'DM Mono',monospace"}}>{Math.max(d.actualRate,floor).toFixed(1)}%</td>
-                    <td style={{padding:"9px 12px",fontSize:12,color:"#64748b",fontFamily:"'DM Mono',monospace"}}>{d.actual}</td>
-                    <td style={{padding:"9px 12px",fontSize:12,color:"#e2e8f0",fontFamily:"'DM Mono',monospace"}}>{d.flooredCC}</td>
-                    <td style={{padding:"9px 12px",fontSize:13,fontWeight:600,color:d.gain>0?"#4ade80":"#64748b",fontFamily:"'DM Mono',monospace"}}>
-                      {d.gain>0?`+${d.gain}`:d.gain===0?"—":d.gain}
-                    </td>
+            <div style={{background:"#0a1520",border:"1px solid #1a2a3a",borderRadius:12,padding:20,overflowX:"auto"}}>
+              <div style={{fontSize:13,fontWeight:600,color:"#e2e8f0",marginBottom:14}}>Per-Physician Impact</div>
+              <table>
+                <thead>
+                  <tr style={{borderBottom:"1px solid #1a2a3a"}}>
+                    {["Physician","Mar Cases","Actual %","Floored %","Actual CC","Projected CC","Gain"].map(h=>(
+                      <th key={h} style={{textAlign:"left",padding:"8px 12px",fontSize:11,color:"#475569",fontWeight:500,whiteSpace:"nowrap"}}>{h}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {scenarioData.map((d,i)=>(
+                    <tr key={d.name} style={{borderBottom:"1px solid #0f1923",background:i%2===0?"#0a1218":"#080e14"}}>
+                      <td style={{padding:"9px 12px",fontSize:13,color:"#e2e8f0",fontWeight:500}}>{d.name}</td>
+                      <td style={{padding:"9px 12px",fontSize:12,color:"#64748b",fontFamily:"'DM Mono',monospace"}}>{d.cases}</td>
+                      <td style={{padding:"9px 12px",fontSize:12,color:cellColor(d.ar),fontFamily:"'DM Mono',monospace"}}>{d.ar}%</td>
+                      <td style={{padding:"9px 12px",fontSize:12,color:cellColor(d.fr),fontFamily:"'DM Mono',monospace"}}>{d.fr.toFixed(1)}%</td>
+                      <td style={{padding:"9px 12px",fontSize:12,color:"#64748b",fontFamily:"'DM Mono',monospace"}}>{d.actual}</td>
+                      <td style={{padding:"9px 12px",fontSize:12,color:"#e2e8f0",fontFamily:"'DM Mono',monospace"}}>{d.proj}</td>
+                      <td style={{padding:"9px 12px",fontSize:13,fontWeight:600,color:d.gain>0?"#4ade80":"#64748b",fontFamily:"'DM Mono',monospace"}}>{d.gain>0?`+${d.gain}`:d.gain===0?"—":d.gain}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div style={{marginTop:10,fontSize:11,color:"#334155"}}>Revenue @ $162/encounter (Medicare blended). For QI/leadership use only.</div>
           </div>
-          <div style={{marginTop:12,fontSize:11,color:"#334155"}}>Revenue gain calculated at $162/encounter (Medicare blended rate). For QI/leadership use only.</div>
-        </>}
+        )}
 
-        {/* ════ FULL TABLE ════ */}
-        {tab==="table" && <>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-            <div style={{fontSize:14,fontWeight:600,color:"#e2e8f0"}}>All Physicians · All Months · Click month header to sort</div>
-            <div style={{display:"flex",gap:8}}>
-              {[{id:"all",label:"All"},{id:"strong",label:"Strong"},{id:"watch",label:"Developing"},{id:"needs",label:"Needs Attn"}].map(f=>(
-                <button key={f.id} className="filter-btn" onClick={()=>setFilter(f.id)}
-                  style={{background:filter===f.id?"#1a2a3a":"transparent",
-                    border:`1px solid ${filter===f.id?"#4a6a8a":"#2a3a4a"}`,
-                    color:filter===f.id?"#e2e8f0":"#475569"}}>
-                  {f.label}
-                </button>
-              ))}
+        {/* TABLE */}
+        {tab==="table"&&(
+          <div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16,flexWrap:"wrap",gap:12}}>
+              <div style={{fontSize:14,fontWeight:600,color:"#e2e8f0"}}>All Physicians · All Months · Click month to sort</div>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                {[{id:"all",label:"All"},{id:"strong",label:"Strong"},{id:"watch",label:"Developing"},{id:"needs",label:"Needs Attn"}].map(f=>(
+                  <button key={f.id} className="filter-btn" onClick={()=>setFilter(f.id)}
+                    style={{background:filter===f.id?"#1a2a3a":"transparent",border:`1px solid ${filter===f.id?"#4a6a8a":"#2a3a4a"}`,color:filter===f.id?"#e2e8f0":"#475569"}}>
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div style={{overflowX:"auto"}}>
+              <table>
+                <thead>
+                  <tr style={{borderBottom:"1px solid #1a2a3a"}}>
+                    <th style={{textAlign:"left",padding:"10px 12px",color:"#475569",fontWeight:500,fontSize:12,whiteSpace:"nowrap"}}>Physician</th>
+                    <th style={{textAlign:"center",padding:"10px 8px",color:"#475569",fontWeight:500,fontSize:12}}>Status</th>
+                    {MONTHS.map((m,i)=>(
+                      <th key={m} onClick={()=>setSortBy(MONTH_KEYS[i])}
+                        style={{textAlign:"center",padding:"10px 8px",color:sortBy===MONTH_KEYS[i]?"#e2e8f0":i===5?"#facc15":"#475569",fontWeight:500,cursor:"pointer",whiteSpace:"nowrap",fontSize:12,userSelect:"none"}}>
+                        {m}{sortBy===MONTH_KEYS[i]?" ▼":""}
+                      </th>
+                    ))}
+                    <th style={{textAlign:"center",padding:"10px 8px",color:"#475569",fontWeight:500,fontSize:12}}>Avg</th>
+                    <th style={{textAlign:"center",padding:"10px 8px",color:"#475569",fontWeight:500,fontSize:12}}>Trend</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tableRows.map((p,idx)=>{
+                    const s=getStatus(p),cfg=STATUS_CFG[s],tr=getTrend(p);
+                    return(
+                      <tr key={p.name} className="dr-row" style={{borderBottom:"1px solid #0f1923",background:idx%2===0?"#0a1218":"#080e14"}}>
+                        <td style={{padding:"9px 12px",fontWeight:500,color:"#e2e8f0",whiteSpace:"nowrap",fontSize:13}}>
+                          {p.name}{p.lowVol&&<span style={{fontSize:10,color:"#475569",marginLeft:6}}>*</span>}
+                        </td>
+                        <td style={{padding:"9px 8px",textAlign:"center"}}>
+                          <span style={{background:cfg.bg,border:`1px solid ${cfg.border}`,borderRadius:4,padding:"2px 8px",fontSize:10,color:cfg.text,fontWeight:500}}>{cfg.label}</span>
+                        </td>
+                        {MONTH_KEYS.map((k,i)=>(
+                          <td key={k} style={{padding:"9px 8px",textAlign:"center",fontFamily:"'DM Mono',monospace",fontSize:12,color:cellColor(p[k]),opacity:i===5?0.8:1}}>
+                            {p[k]!==null&&p[k]!==undefined?`${p[k]}%`:"—"}
+                          </td>
+                        ))}
+                        <td style={{padding:"9px 8px",textAlign:"center",fontFamily:"'DM Mono',monospace",fontSize:12,color:"#94a3b8",fontWeight:600}}>{getAvg(p)}%</td>
+                        <td style={{padding:"9px 8px",textAlign:"center",fontSize:16,color:trendColor(tr)}}>{trendIcon(tr)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div style={{marginTop:14,display:"flex",gap:20,fontSize:11,color:"#334155",flexWrap:"wrap"}}>
+              <span style={{color:"#4ade80"}}>■ Green ≥8%</span>
+              <span style={{color:"#facc15"}}>■ Yellow 5–7.9%</span>
+              <span style={{color:"#f87171"}}>■ Red &lt;5%</span>
+              <span style={{color:"#facc15"}}>* Apr '26 partial</span>
+              <span>* Low volume = volatile rate</span>
             </div>
           </div>
-          <div style={{overflowX:"auto"}}>
-            <table>
-              <thead>
-                <tr style={{borderBottom:"1px solid #1a2a3a"}}>
-                  <th style={{textAlign:"left",padding:"10px 12px",color:"#475569",fontWeight:500,whiteSpace:"nowrap",fontSize:12}}>Physician</th>
-                  <th style={{textAlign:"center",padding:"10px 8px",color:"#475569",fontWeight:500,fontSize:12}}>Status</th>
-                  {MONTHS.map((m,i)=>(
-                    <th key={m} onClick={()=>setSortBy(MONTH_KEYS[i])}
-                      style={{textAlign:"center",padding:"10px 8px",
-                        color:sortBy===MONTH_KEYS[i]?"#e2e8f0":i===5?"#facc15":"#475569",
-                        fontWeight:500,cursor:"pointer",whiteSpace:"nowrap",fontSize:12,userSelect:"none"}}>
-                      {m}{sortBy===MONTH_KEYS[i]?" ▼":""}
-                    </th>
-                  ))}
-                  <th style={{textAlign:"center",padding:"10px 8px",color:"#475569",fontWeight:500,fontSize:12}}>Avg</th>
-                  <th style={{textAlign:"center",padding:"10px 8px",color:"#475569",fontWeight:500,fontSize:12}}>Trend</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tableRows.map((p,idx)=>{
-                  const s=getStatus(p), cfg=STATUS_COLORS[s], tr=getTrend(p);
-                  return (
-                    <tr key={p.name} className="dr-row" style={{borderBottom:"1px solid #0f1923",background:idx%2===0?"#0a1218":"#080e14"}}>
-                      <td style={{padding:"9px 12px",fontWeight:500,color:"#e2e8f0",whiteSpace:"nowrap",fontSize:13}}>
-                        {p.name}{p.lowVol&&<span style={{fontSize:10,color:"#475569",marginLeft:6}}>*</span>}
-                      </td>
-                      <td style={{padding:"9px 8px",textAlign:"center"}}>
-                        <span style={{background:cfg.bg,border:`1px solid ${cfg.border}`,borderRadius:4,padding:"2px 8px",fontSize:10,color:cfg.text,fontWeight:500}}>{cfg.label}</span>
-                      </td>
-                      {MONTH_KEYS.map((k,i)=>(
-                        <td key={k} style={{padding:"9px 8px",textAlign:"center",fontFamily:"'DM Mono',monospace",fontSize:12,color:i===5?cellColor(p[k])+"cc":cellColor(p[k])}}>
-                          {p[k]!==null?`${p[k]}%`:"—"}
-                        </td>
-                      ))}
-                      <td style={{padding:"9px 8px",textAlign:"center",fontFamily:"'DM Mono',monospace",fontSize:12,color:"#94a3b8",fontWeight:600}}>{getAvg(p)}%</td>
-                      <td style={{padding:"9px 8px",textAlign:"center",fontSize:16,color:TREND_COLORS[tr]}}>{TREND_ICONS[tr]}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          <div style={{marginTop:14,display:"flex",gap:20,fontSize:11,color:"#334155",flexWrap:"wrap"}}>
-            <span style={{color:"#4ade80"}}>■ Green ≥8%</span>
-            <span style={{color:"#facc15"}}>■ Yellow 5–7.9%</span>
-            <span style={{color:"#f87171"}}>■ Red &lt;5%</span>
-            <span style={{color:"#facc15"}}>⚑ Apr '26 partial (73.9% billed)</span>
-            <span>* Low volume — rate volatile</span>
-            <span>↑↓ trend = Jan→Mar direction</span>
-          </div>
-        </>}
+        )}
 
       </div>
 
-      {/* ── Footer ── */}
       <div style={{borderTop:"1px solid #0f1923",padding:"14px 32px",fontSize:11,color:"#1e2a3a",textAlign:"center",lineHeight:1.6}}>
-        CritCareIQ · Physician CC rates only · APPs excluded from all calculations · Revenue est. @ $162/encounter (Medicare blended) · For QI/educational use only · Not a substitute for compliance review · Mercy Fitzgerald O52
+        CritCareIQ · Physician CC rates only · APPs excluded · Revenue est. @ $162/encounter (Medicare blended) · For QI/educational use only · Not a substitute for compliance review · Mercy Fitzgerald O52
       </div>
     </div>
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
 </script>
 </body>
 </html>
