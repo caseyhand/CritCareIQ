@@ -110,7 +110,7 @@ function marchCC(p) {
 }
 const MAR_TOTAL_CASES = PHYSICIANS.reduce((s,p) => s + (p.cases.mar26 || 0), 0);
 
-export default function App() {
+function App() {
   const [tab, setTab]       = useState("overview");
   const [filter, setFilter] = useState("all");
   const [sortBy, setSortBy] = useState("mar26");
