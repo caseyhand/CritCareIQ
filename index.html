@@ -70,28 +70,28 @@ const PASSWORD = "MTF2026";
 const BENCHMARK = 8;
 const MONTHS = ["Nov '25","Dec '25","Jan '26","Feb '26","Mar '26","Apr '26*"];
 const MONTH_KEYS = ["nov25","dec25","jan26","feb26","mar26","apr26"];
-const GROUP_RATES = { nov25:4.9, dec25:4.8, jan26:3.8, feb26:4.4, mar26:5.2, apr26:5.2 };
+const GROUP_RATES = { nov25:4.9, dec25:4.8, jan26:3.8, feb26:4.4, mar26:5.2, apr26:5.6 };
 
 const PHYSICIANS = [
-  { name:"Azer, Michele",          nov25:9.4,  dec25:7.6,  jan26:1.9, feb26:2.3,  mar26:4.7,  apr26:3.2,  cases:{nov25:117,dec25:119,jan26:103,feb26:129,mar26:107,apr26:93}  },
-  { name:"Bendesky, Brad",         nov25:2.3,  dec25:7.4,  jan26:3.6, feb26:2.1,  mar26:5.4,  apr26:7.5,  cases:{nov25:177,dec25:202,jan26:194,feb26:189,mar26:203,apr26:161} },
-  { name:"Bethel, Courtney",       nov25:8.0,  dec25:5.3,  jan26:4.7, feb26:9.1,  mar26:7.5,  apr26:4.8,  cases:{nov25:125,dec25:170,jan26:129,feb26:143,mar26:199,apr26:126} },
-  { name:"Bianchi, Pollianne",     nov25:3.2,  dec25:7.7,  jan26:3.6, feb26:4.4,  mar26:5.3,  apr26:10.3, cases:{nov25:155,dec25:182,jan26:192,feb26:206,mar26:209,apr26:97}  },
+  { name:"Azer, Michele",          nov25:9.4,  dec25:7.6,  jan26:1.9, feb26:2.3,  mar26:4.7,  apr26:3.1,  cases:{nov25:117,dec25:119,jan26:103,feb26:129,mar26:107,apr26:98}  },
+  { name:"Bendesky, Brad",         nov25:2.3,  dec25:7.4,  jan26:3.6, feb26:2.1,  mar26:5.4,  apr26:8.0,  cases:{nov25:177,dec25:202,jan26:194,feb26:189,mar26:203,apr26:174} },
+  { name:"Bethel, Courtney",       nov25:8.0,  dec25:5.3,  jan26:4.7, feb26:9.1,  mar26:7.5,  apr26:5.1,  cases:{nov25:125,dec25:170,jan26:129,feb26:143,mar26:199,apr26:138} },
+  { name:"Bianchi, Pollianne",     nov25:3.2,  dec25:7.7,  jan26:3.6, feb26:4.4,  mar26:5.3,  apr26:11.7, cases:{nov25:155,dec25:182,jan26:192,feb26:206,mar26:209,apr26:111} },
   { name:"Canter, Danielle",       nov25:0,    dec25:0,    jan26:0,   feb26:23.5, mar26:23.5, apr26:0,    cases:{nov25:13, dec25:14, jan26:14, feb26:17, mar26:17, apr26:17},  lowVol:true },
-  { name:"Casey, Gregory",         nov25:7.7,  dec25:6.1,  jan26:9.1, feb26:7.1,  mar26:9.4,  apr26:16.0, cases:{nov25:182,dec25:165,jan26:164,feb26:154,mar26:212,apr26:25}  },
-  { name:"Disandro, Daniel",       nov25:2.0,  dec25:1.5,  jan26:0.5, feb26:0.6,  mar26:3.1,  apr26:0.9,  cases:{nov25:151,dec25:196,jan26:194,feb26:156,mar26:159,apr26:111} },
-  { name:"Dollard, Denis",         nov25:1.5,  dec25:3.6,  jan26:6.5, feb26:4.0,  mar26:3.2,  apr26:2.4,  cases:{nov25:134,dec25:110,jan26:123,feb26:126,mar26:125,apr26:84}  },
-  { name:"Gejer, Wendymarie",      nov25:8.7,  dec25:4.0,  jan26:6.1, feb26:5.1,  mar26:4.1,  apr26:5.6,  cases:{nov25:115,dec25:100,jan26:114,feb26:98, mar26:122,apr26:90}  },
-  { name:"Hand, Steven",           nov25:7.1,  dec25:3.0,  jan26:4.3, feb26:3.2,  mar26:7.1,  apr26:6.1,  cases:{nov25:168,dec25:166,jan26:164,feb26:190,mar26:170,apr26:131} },
-  { name:"Jain, Sechin",           nov25:7.0,  dec25:7.9,  jan26:5.3, feb26:12.5, mar26:8.2,  apr26:6.8,  cases:{nov25:86, dec25:38, jan26:57, feb26:24, mar26:61, apr26:44}  },
-  { name:"Kleinberg, Christopher", nov25:null, dec25:null, jan26:null,feb26:10.3, mar26:6.7,  apr26:8.3,  cases:{nov25:null,dec25:null,jan26:null,feb26:29,mar26:75,apr26:48}  },
-  { name:"Krass, Samuel",          nov25:1.4,  dec25:7.8,  jan26:2.1, feb26:5.4,  mar26:5.8,  apr26:6.7,  cases:{nov25:71, dec25:51, jan26:48, feb26:92, mar26:104,apr26:90}  },
+  { name:"Casey, Gregory",         nov25:7.7,  dec25:6.1,  jan26:9.1, feb26:7.1,  mar26:9.4,  apr26:15.4, cases:{nov25:182,dec25:165,jan26:164,feb26:154,mar26:212,apr26:26}  },
+  { name:"Disandro, Daniel",       nov25:2.0,  dec25:1.5,  jan26:0.5, feb26:0.6,  mar26:3.1,  apr26:0.7,  cases:{nov25:151,dec25:196,jan26:194,feb26:156,mar26:159,apr26:144} },
+  { name:"Dollard, Denis",         nov25:1.5,  dec25:3.6,  jan26:6.5, feb26:4.0,  mar26:3.2,  apr26:3.1,  cases:{nov25:134,dec25:110,jan26:123,feb26:126,mar26:125,apr26:98}  },
+  { name:"Gejer, Wendymarie",      nov25:8.7,  dec25:4.0,  jan26:6.1, feb26:5.1,  mar26:4.1,  apr26:6.1,  cases:{nov25:115,dec25:100,jan26:114,feb26:98, mar26:122,apr26:98}  },
+  { name:"Hand, Steven",           nov25:7.1,  dec25:3.0,  jan26:4.3, feb26:3.2,  mar26:7.1,  apr26:6.1,  cases:{nov25:168,dec25:166,jan26:164,feb26:190,mar26:170,apr26:163} },
+  { name:"Jain, Sechin",           nov25:7.0,  dec25:7.9,  jan26:5.3, feb26:12.5, mar26:8.2,  apr26:5.1,  cases:{nov25:86, dec25:38, jan26:57, feb26:24, mar26:61, apr26:59}  },
+  { name:"Kleinberg, Christopher", nov25:null, dec25:null, jan26:null,feb26:10.3, mar26:6.7,  apr26:7.9,  cases:{nov25:null,dec25:null,jan26:null,feb26:29,mar26:75,apr26:63}  },
+  { name:"Krass, Samuel",          nov25:1.4,  dec25:7.8,  jan26:2.1, feb26:5.4,  mar26:5.8,  apr26:7.1,  cases:{nov25:71, dec25:51, jan26:48, feb26:92, mar26:104,apr26:99}  },
   { name:"Kulp, Kari",             nov25:0,    dec25:11.1, jan26:2.6, feb26:3.6,  mar26:4.2,  apr26:4.2,  cases:{nov25:24, dec25:27, jan26:38, feb26:28, mar26:24, apr26:24},  lowVol:true },
-  { name:"Lehman, Curtis",         nov25:6.1,  dec25:5.2,  jan26:5.5, feb26:5.7,  mar26:5.0,  apr26:4.6,  cases:{nov25:229,dec25:271,jan26:272,feb26:230,mar26:202,apr26:153} },
-  { name:"Lutz, Ronald",           nov25:7.1,  dec25:7.5,  jan26:5.1, feb26:6.8,  mar26:4.1,  apr26:3.3,  cases:{nov25:182,dec25:173,jan26:175,feb26:176,mar26:218,apr26:121} },
-  { name:"Makopoulos, John",       nov25:0.5,  dec25:1.0,  jan26:0.9, feb26:2.3,  mar26:2.2,  apr26:1.1,  cases:{nov25:189,dec25:209,jan26:212,feb26:215,mar26:223,apr26:177} },
-  { name:"Urban, Colleen",         nov25:null, dec25:null, jan26:null,feb26:null,  mar26:null, apr26:6.4,  cases:{nov25:null,dec25:null,jan26:null,feb26:null,mar26:null,apr26:110} },
-  { name:"Yoon, Russell",          nov25:1.1,  dec25:0.8,  jan26:0.7, feb26:0,    mar26:1.5,  apr26:7.5,  cases:{nov25:93, dec25:126,jan26:138,feb26:128,mar26:130,apr26:106} },
+  { name:"Lehman, Curtis",         nov25:6.1,  dec25:5.2,  jan26:5.5, feb26:5.7,  mar26:5.0,  apr26:5.6,  cases:{nov25:229,dec25:271,jan26:272,feb26:230,mar26:202,apr26:197} },
+  { name:"Lutz, Ronald",           nov25:7.1,  dec25:7.5,  jan26:5.1, feb26:6.8,  mar26:4.1,  apr26:3.9,  cases:{nov25:182,dec25:173,jan26:175,feb26:176,mar26:218,apr26:155} },
+  { name:"Makopoulos, John",       nov25:0.5,  dec25:1.0,  jan26:0.9, feb26:2.3,  mar26:2.2,  apr26:2.6,  cases:{nov25:189,dec25:209,jan26:212,feb26:215,mar26:223,apr26:227} },
+  { name:"Urban, Colleen",         nov25:null, dec25:null, jan26:null,feb26:null,  mar26:null, apr26:6.2,  cases:{nov25:null,dec25:null,jan26:null,feb26:null,mar26:null,apr26:129} },
+  { name:"Yoon, Russell",          nov25:1.1,  dec25:0.8,  jan26:0.7, feb26:0,    mar26:1.5,  apr26:8.9,  cases:{nov25:93, dec25:126,jan26:138,feb26:128,mar26:130,apr26:123} },
 ];
 
 const LINE_COLORS = ["#e63946","#2a9d8f","#e9c46a","#f4a261","#4cc9f0","#c77dff",
@@ -169,19 +169,19 @@ function SvgChart({ data, lines, yMax=14, height=240 }) {
 function App() {
   const [tab,    setTab]    = useState("overview");
   const [filter, setFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("mar26");
+  const [sortBy, setSortBy] = useState("apr26");
   const [selDr,  setSelDr]  = useState("");
   const [floor,  setFloor]  = useState(5);
 
   const groupData = MONTH_KEYS.map((k,i)=>({month:MONTHS[i],rate:GROUP_RATES[k],partial:k==="apr26"}));
 
   const leaderboard = [...PHYSICIANS]
-    .filter(p=>p.mar26!==null&&(p.cases.mar26||0)>=20&&!p.lowVol)
-    .sort((a,b)=>b.mar26-a.mar26);
+    .filter(p=>p.apr26!==null&&(p.cases.apr26||0)>=20&&!p.lowVol)
+    .sort((a,b)=>b.apr26-a.apr26);
 
   const chartDrs = selDr
     ? PHYSICIANS.filter(p=>p.name===selDr)
-    : PHYSICIANS.filter(p=>(p.cases.mar26||0)>=30&&!p.lowVol);
+    : PHYSICIANS.filter(p=>(p.cases.apr26||0)>=30&&!p.lowVol);
   const trendData = MONTH_KEYS.map((k,i)=>{
     const obj={month:MONTHS[i],partial:k==="apr26"};
     chartDrs.forEach(p=>{obj[p.name]=p[k];});
@@ -192,10 +192,10 @@ function App() {
     .filter(p=>filter==="all"||getStatus(p)===filter)
     .sort((a,b)=>(b[sortBy]??-1)-(a[sortBy]??-1));
 
-  const MAR_TOTAL=PHYSICIANS.reduce((s,p)=>s+(p.cases.mar26||0),0);
+  const APR_TOTAL=PHYSICIANS.reduce((s,p)=>s+(p.cases.apr26||0),0);
   const scenarioData=PHYSICIANS.map(p=>{
-    const cases=p.cases.mar26||0;
-    const ar=p.mar26||0;
+    const cases=p.cases.apr26||0;
+    const ar=p.apr26||0;
     const actual=Math.round(ar/100*cases);
     const fr=Math.max(ar,floor);
     const proj=Math.round(fr/100*cases);
@@ -204,18 +204,18 @@ function App() {
   const totActual=scenarioData.reduce((s,d)=>s+d.actual,0);
   const totProj=scenarioData.reduce((s,d)=>s+d.proj,0);
   const totGain=totProj-totActual;
-  const newRate=MAR_TOTAL>0?((totProj/MAR_TOTAL)*100).toFixed(1):"—";
+  const newRate=APR_TOTAL>0?((totProj/APR_TOTAL)*100).toFixed(1):"—";
   const revGain=totGain*162;
 
   const TABS=[
     {id:"overview",   label:"Overview"},
-    {id:"leaderboard",label:"Mar Leaderboard"},
+    {id:"leaderboard",label:"Apr Leaderboard"},
     {id:"trends",     label:"Physician Trends"},
     {id:"scenario",   label:"Scenario Calc"},
     {id:"table",      label:"Full Data Table"},
   ];
 
-  const S=(style)=>style; // passthrough for readability
+  const S=(style)=>style;
 
   return (
     <div style={{minHeight:"100vh",display:"flex",flexDirection:"column"}}>
@@ -254,8 +254,8 @@ function App() {
           <div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16,marginBottom:24}}>
               {[
-                {label:"Mar '26 Physician CC Rate",value:"5.2%",sub:"↑ from 3.8% Jan low",color:"#4ade80",bg:"#0a1f0a",border:"#1a4a1a"},
-                {label:"National EM Benchmark",value:"8–10%",sub:"Gap: ~3pts from target",color:"#facc15",bg:"#1a1a08",border:"#3a3a10"},
+                {label:"Apr '26 Physician CC Rate",value:"5.6%",sub:"↑ from 3.8% Jan low · 84% billed",color:"#4ade80",bg:"#0a1f0a",border:"#1a4a1a"},
+                {label:"National EM Benchmark",value:"8–10%",sub:"Gap: ~2.4pts from target",color:"#facc15",bg:"#1a1a08",border:"#3a3a10"},
                 {label:"Est. Missed Rev / Month",value:"~$20K",sub:"vs. 8% benchmark",color:"#f87171",bg:"#1a0808",border:"#3a1010"},
                 {label:"Annualized Opportunity",value:"~$240K",sub:"@ $162/encounter (Medicare)",color:"#60a5fa",bg:"#08101a",border:"#10203a"},
               ].map((c,i)=>(
@@ -279,7 +279,7 @@ function App() {
               <div style={{display:"flex",gap:20,marginTop:8,fontSize:11,color:"#475569",flexWrap:"wrap"}}>
                 <span>● Red = physician CC rate</span>
                 <span style={{color:"#facc15"}}>◉ Yellow = 8% benchmark line</span>
-                <span style={{color:"#facc15"}}>* Apr '26 partial (73.9% billed)</span>
+                <span style={{color:"#facc15"}}>* Apr '26 partial (84.1% billed)</span>
               </div>
             </div>
 
@@ -299,7 +299,7 @@ function App() {
                         <div key={p.name} style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"#94a3b8",marginBottom:6,paddingBottom:6,borderBottom:"1px solid rgba(255,255,255,.04)"}}>
                           <span>{p.name.split(",")[0]}</span>
                           <span style={{color:cfg.text,fontWeight:500,fontFamily:"'DM Mono',monospace"}}>
-                            {p.mar26!==null?`${p.mar26}% Mar`:"—"}
+                            {p.apr26!==null?`${p.apr26}% Apr`:"—"}
                             <span style={{marginLeft:6,color:trendColor(tr)}}>{trendIcon(tr)}</span>
                           </span>
                         </div>
@@ -316,12 +316,12 @@ function App() {
         {tab==="leaderboard"&&(
           <div>
             <div style={{marginBottom:20}}>
-              <div style={{fontSize:16,fontWeight:600,color:"#e2e8f0",marginBottom:4}}>March 2026 Physician Leaderboard</div>
-              <div style={{fontSize:12,color:"#475569"}}>Ranked by CC% · ≥20 cases · Benchmark: 8–10% · Low-volume excluded</div>
+              <div style={{fontSize:16,fontWeight:600,color:"#e2e8f0",marginBottom:4}}>April 2026 Physician Leaderboard</div>
+              <div style={{fontSize:12,color:"#475569"}}>Ranked by CC% · ≥20 cases · Benchmark: 8–10% · Low-volume excluded · 84% billed</div>
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               {leaderboard.map((p,i)=>{
-                const pct=p.mar26;
+                const pct=p.apr26;
                 const barW=Math.min((pct/14)*100,100);
                 const bc=pct>=BENCHMARK?"#4ade80":pct>=5?"#facc15":"#f87171";
                 return(
@@ -335,7 +335,7 @@ function App() {
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
                         <div style={{fontSize:14,fontWeight:600,color:"#e2e8f0"}}>{p.name}</div>
                         <div style={{display:"flex",alignItems:"center",gap:10}}>
-                          <span style={{fontSize:11,color:"#475569"}}>{p.cases.mar26} cases</span>
+                          <span style={{fontSize:11,color:"#475569"}}>{p.cases.apr26} cases</span>
                           <span style={{fontSize:20,fontWeight:700,color:bc,fontFamily:"'DM Mono',monospace"}}>{pct}%</span>
                         </div>
                       </div>
@@ -359,7 +359,7 @@ function App() {
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16,flexWrap:"wrap",gap:12}}>
               <div>
                 <div style={{fontSize:14,fontWeight:600,color:"#e2e8f0"}}>Individual Physician Trends</div>
-                <div style={{fontSize:12,color:"#475569",marginTop:2}}>Default: ≥30 Mar cases · Yellow dashed = 8% target</div>
+                <div style={{fontSize:12,color:"#475569",marginTop:2}}>Default: ≥30 Apr cases · Yellow dashed = 8% target</div>
               </div>
               <select value={selDr} onChange={e=>setSelDr(e.target.value)}>
                 <option value="">All (≥30 cases)</option>
@@ -384,7 +384,7 @@ function App() {
               </div>
             )}
             {selDr&&<button onClick={()=>setSelDr("")} style={{marginTop:12,background:"transparent",border:"1px solid #2a3a4a",borderRadius:6,padding:"6px 14px",color:"#475569",fontSize:12,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>← Show all</button>}
-            <div style={{marginTop:10,fontSize:11,color:"#334155"}}>Apr '26 partial (73.9% billed) — rates may shift as remaining encounters are coded.</div>
+            <div style={{marginTop:10,fontSize:11,color:"#334155"}}>Apr '26 partial (84.1% billed) — rates may shift as remaining encounters are coded.</div>
           </div>
         )}
 
@@ -393,7 +393,7 @@ function App() {
           <div>
             <div style={{marginBottom:20}}>
               <div style={{fontSize:16,fontWeight:600,color:"#e2e8f0",marginBottom:4}}>Floor Rate Scenario Calculator</div>
-              <div style={{fontSize:12,color:"#475569"}}>Set a minimum CC% floor — see group rate and revenue impact if no physician bills below it. Based on March 2026 volumes.</div>
+              <div style={{fontSize:12,color:"#475569"}}>Set a minimum CC% floor — see group rate and revenue impact if no physician bills below it. Based on April 2026 volumes.</div>
             </div>
             <div style={{background:"#0a1520",border:"1px solid #1a2a3a",borderRadius:12,padding:24,marginBottom:20}}>
               <div style={{display:"flex",alignItems:"center",gap:24,marginBottom:20}}>
@@ -411,7 +411,7 @@ function App() {
               </div>
               <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12}}>
                 {[
-                  {label:"Current Group Rate",value:"5.2%",color:"#94a3b8"},
+                  {label:"Current Group Rate",value:"5.6%",color:"#94a3b8"},
                   {label:"Projected Group Rate",value:`${newRate}%`,color:"#4ade80"},
                   {label:"Additional CC Bills",value:`+${totGain}`,color:"#facc15"},
                   {label:"Monthly Revenue Gain",value:`+$${revGain.toLocaleString()}`,color:"#60a5fa"},
@@ -428,7 +428,7 @@ function App() {
               <table>
                 <thead>
                   <tr style={{borderBottom:"1px solid #1a2a3a"}}>
-                    {["Physician","Mar Cases","Actual %","Floored %","Actual CC","Projected CC","Gain"].map(h=>(
+                    {["Physician","Apr Cases","Actual %","Floored %","Actual CC","Projected CC","Gain"].map(h=>(
                       <th key={h} style={{textAlign:"left",padding:"8px 12px",fontSize:11,color:"#475569",fontWeight:500,whiteSpace:"nowrap"}}>{h}</th>
                     ))}
                   </tr>
@@ -510,7 +510,7 @@ function App() {
               <span style={{color:"#4ade80"}}>■ Green ≥8%</span>
               <span style={{color:"#facc15"}}>■ Yellow 5–7.9%</span>
               <span style={{color:"#f87171"}}>■ Red &lt;5%</span>
-              <span style={{color:"#facc15"}}>* Apr '26 partial</span>
+              <span style={{color:"#facc15"}}>* Apr '26 partial (84.1% billed)</span>
               <span>* Low volume = volatile rate</span>
             </div>
           </div>
