@@ -93,7 +93,7 @@ function App() {
   const [answers, setAnswers]   = useState({});
   const [phase, setPhase]       = useState("survey");
   const [feedback, setFeedback] = useState("");
-  const [saveErr, setSaveErr]   = useState("");
+  const [saveErr, setSaveErr]   = useState(""); const [retryCount, setRetryCount] = useState(0);
 
   const q        = QUESTIONS[step - 1];
   const progress = step === 0 ? 0 : (step / (QUESTIONS.length + 1)) * 100;
@@ -115,23 +115,32 @@ function App() {
     return false;
   }
 
-  async function handleSubmit() {
-    setPhase("generating"); setSaveErr("");
-    try {
-      const { feedback: fb, actionSummary } = await getFeedback(name.trim(), answers);
-      await saveToAirtable(name.trim(), answers, actionSummary);
-      setFeedback(fb);
-      setPhase("done");
-    } catch(e) {
-      try {
-        await saveToAirtable(name.trim(), answers, "");
-        setFeedback("");
-        setPhase("done");
-      } catch(e2) {
-        setSaveErr(e2.message || "Something went wrong — please try again.");
-        setPhase("survey");
-      }
-    }
+async function handleSubmit() {
+  setPhase("generating");
+  setSaveErr("");
+
+  let fb = "";
+  let actionSummary = "";
+
+  try {
+    const result = await getFeedback(name.trim(), answers);
+    fb = result.feedback || "";
+    actionSummary = result.actionSummary || "";
+  } catch (e) {
+    console.error("Feedback generation failed:", e.message);
+  }
+
+  try {
+    await saveToAirtable(name.trim(), answers, actionSummary);
+    setFeedback(fb);
+    setPhase("done");
+  } catch (e) {
+    console.error("Airtable save failed:", e.message);
+    setSaveErr(`Couldn't save your responses: ${e.message}. Please try again.`);
+    setRetryCount(r => r + 1);
+    setPhase("survey");
+  }
+}
   }
 
   if (phase === "generating") return (
