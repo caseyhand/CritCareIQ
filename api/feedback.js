@@ -47,7 +47,7 @@ Q7 - Open comments: ${answers.q7 || "none"}`;
   try {
     const [feedbackData, tagData] = await Promise.all([
       callClaude(ANTHROPIC_KEY, {
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-5",
         max_tokens: 1000,
         system: `You are Casey, an emergency medicine AMD running a critical care billing improvement program at Mercy Fitzgerald ED. You've just received a physician's survey responses about CC documentation. Write a brief, warm, peer-to-peer personalized feedback message directly to this physician.
 Format your response as:
@@ -58,7 +58,7 @@ Keep it under 150 words total. Never mention billing revenue. Never be punitive.
         messages: [{ role: "user", content: `Here are the survey responses:\n\n${summary}\n\nGenerate personalized feedback and action items for this physician.` }],
       }),
       callClaude(ANTHROPIC_KEY, {
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-5",
         max_tokens: 200,
         system: `You are analyzing physician survey responses for a CC billing improvement program. Return ONLY a JSON object with these fields:
 - tier: "high_performer" | "developing" | "needs_attention"
