@@ -61,8 +61,9 @@ async function getFeedback(name, answers) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, answers }),
   });
-  if (!res.ok) throw new Error(`Feedback error ${res.status}`);
-  return res.json();
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error || `Feedback error ${res.status}`);
+  return data;
 }
 
 const QUESTIONS = [
@@ -93,7 +94,8 @@ function App() {
   const [answers, setAnswers]   = useState({});
   const [phase, setPhase]       = useState("survey");
   const [feedback, setFeedback] = useState("");
-  const [saveErr, setSaveErr]   = useState(""); const [retryCount, setRetryCount] = useState(0);
+  const [saveErr, setSaveErr]   = useState("");
+  const [retryCount, setRetryCount] = useState(0);
 
   const q        = QUESTIONS[step - 1];
   const progress = step === 0 ? 0 : (step / (QUESTIONS.length + 1)) * 100;
@@ -115,32 +117,31 @@ function App() {
     return false;
   }
 
-async function handleSubmit() {
-  setPhase("generating");
-  setSaveErr("");
+  async function handleSubmit() {
+    setPhase("generating");
+    setSaveErr("");
 
-  let fb = "";
-  let actionSummary = "";
+    let fb = "";
+    let actionSummary = "";
 
-  try {
-    const result = await getFeedback(name.trim(), answers);
-    fb = result.feedback || "";
-    actionSummary = result.actionSummary || "";
-  } catch (e) {
-    console.error("Feedback generation failed:", e.message);
-  }
+    try {
+      const result = await getFeedback(name.trim(), answers);
+      fb = result.feedback || "";
+      actionSummary = result.actionSummary || "";
+    } catch (e) {
+      console.error("Feedback generation failed:", e.message);
+    }
 
-  try {
-    await saveToAirtable(name.trim(), answers, actionSummary);
-    setFeedback(fb);
-    setPhase("done");
-  } catch (e) {
-    console.error("Airtable save failed:", e.message);
-    setSaveErr(`Couldn't save your responses: ${e.message}. Please try again.`);
-    setRetryCount(r => r + 1);
-    setPhase("survey");
-  }
-}
+    try {
+      await saveToAirtable(name.trim(), answers, actionSummary);
+      setFeedback(fb);
+      setPhase("done");
+    } catch (e) {
+      console.error("Airtable save failed:", e.message);
+      setSaveErr(`Couldn't save your responses: ${e.message}. Please try again.`);
+      setRetryCount(r => r + 1);
+      setPhase("survey");
+    }
   }
 
   if (phase === "generating") return (
@@ -253,7 +254,12 @@ async function handleSubmit() {
                   style={{width:"100%",minHeight:110,background:"#0f1923",border:"1px solid #1a2a3a",borderRadius:8,padding:"13px 16px",color:"#e2e8f0",fontSize:14,fontFamily:"'DM Sans',sans-serif",resize:"vertical",outline:"none"}}/>
               )}
 
-              {saveErr && <div style={{marginTop:12,fontSize:13,color:"#f87171"}}>⚠ {saveErr}</div>}
+              {saveErr && (
+                <div style={{marginTop:12,padding:"10px 14px",background:"#1a0a0a",border:"1px solid #7f1d1d",borderRadius:8,fontSize:13,color:"#f87171"}}>
+                  ⚠ {saveErr}
+                  {retryCount > 1 && <span style={{display:"block",marginTop:4,fontSize:12,color:"#94a3b8"}}>If this keeps failing, screenshot your answers and send directly to Casey.</span>}
+                </div>
+              )}
 
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:28}}>
                 <button onClick={()=>setStep(s=>s-1)}
