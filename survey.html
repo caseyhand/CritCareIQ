@@ -45,4 +45,303 @@ async function saveToAirtable(name, answers, actionItems) {
     "Q3 Cases Billed":     Array.isArray(answers.q3) ? answers.q3.join(", ") : (answers.q3 || ""),
     "Q4 Main Barrier":     answers.q4 || "",
     "Q5 EPIC Familiarity": answers.q5 ?? null,
-    "Q6 What Would Help":  Array.isArray(answers.q6) ?
+    "Q6 What Would Help":  Array.isArray(answers.q6) ? answers.q6.join(", ") : (answers.q6 || ""),
+    "Q7 Open Comments":    answers.q7 || "",
+    "Action Items":        actionItems || "",
+  };
+  Object.keys(fields).forEach(k => { if (fields[k] === null || fields[k] === "") delete fields[k]; });
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${AIRTABLE_WRITE_TOKEN}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ fields }),
+  });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e?.error?.message || `Error ${res.status}`); }
+  return res.json();
+}
+
+async function generatePhysicianFeedback(name, answers) {
+  const summary = `Physician: ${name}
+Q1 - CC billing confidence (1-5): ${answers.q1 ?? "not answered"}
+Q2 - Believes required for CC billing: ${(answers.q2||[]).join(", ") || "not answered"}
+Q3 - Cases they typically bill as CC: ${(answers.q3||[]).join(", ") || "not answered"}
+Q4 - Main reason for not billing CC: ${answers.q4 || "not answered"}
+Q5 - EPIC CC note familiarity (1-5): ${answers.q5 ?? "not answered"}
+Q6 - What would help most: ${(answers.q6||[]).join(", ") || "not answered"}
+Q7 - Open comments: ${answers.q7 || "none"}`;
+
+  const res = await fetch(ANTHROPIC_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1000,
+      system: `You are Casey, an emergency medicine AMD running a critical care billing improvement program at Mercy Fitzgerald ED. You've just received a physician's survey responses about CC documentation. Write a brief, warm, peer-to-peer personalized feedback message directly to this physician.
+
+Format your response as:
+1. One sentence acknowledging their specific situation (reference their actual answers — confidence score, main barrier, etc.)
+2. "YOUR ACTION ITEMS:" followed by exactly 3 bullet points — specific, practical, non-punitive things they should do based on their gaps
+3. One closing sentence of encouragement
+
+Keep it under 150 words total. Never mention billing revenue. Never be punitive. Write as a colleague, not an administrator. Use plain text, no markdown headers.`,
+      messages: [{ role: "user", content: `Here are the survey responses:\n\n${summary}\n\nGenerate personalized feedback and action items for this physician.` }],
+    }),
+  });
+  const data = await res.json();
+  return data.content?.[0]?.text || "";
+}
+
+async function generateAdminActionTag(name, answers) {
+  const summary = `Physician: ${name}
+CC confidence: ${answers.q1}/5
+Cases billed as CC: ${(answers.q3||[]).join(", ")}
+Main barrier: ${answers.q4}
+EPIC familiarity: ${answers.q5}/5
+What would help: ${(answers.q6||[]).join(", ")}
+Comments: ${answers.q7 || "none"}`;
+
+  const res = await fetch(ANTHROPIC_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 200,
+      system: `You are analyzing physician survey responses for a CC billing improvement program. Return ONLY a JSON object with these fields:
+- tier: "high_performer" | "developing" | "needs_attention"
+- primary_gap: one short phrase (max 6 words) describing the main issue
+- recommended_action: one of these exact strings: "send_dot_phrases" | "schedule_chart_review" | "send_email_series" | "reinforce_and_share" | "no_action_needed"
+- priority: "high" | "medium" | "low"
+Return only valid JSON, no other text.`,
+      messages: [{ role: "user", content: summary }],
+    }),
+  });
+  const data = await res.json();
+  try { return JSON.parse(data.content?.[0]?.text || "{}"); }
+  catch { return {}; }
+}
+
+const QUESTIONS = [
+  { id:"q1", text:"How confident are you in identifying when a patient qualifies for critical care billing?", type:"scale", labels:["Not confident","Very confident"] },
+  { id:"q2", text:"Which of the following do you believe are required to bill critical care? (select all that apply)", type:"multi", options:["ICU admission","Intubation or invasive procedure","Physician actively managing a life-threatening condition","At least 30 minutes of direct care time","A specific diagnosis (e.g. sepsis, STEMI)","Documentation of time in the note"] },
+  { id:"q3", text:"Which of these presentations do you typically bill as critical care? (select all that apply)", type:"multi", options:["Septic shock with vasopressors","Sepsis without shock but with lactate >2 and active resuscitation","Acute respiratory failure on BiPAP / HFNC","Severe hyperkalemia with EKG changes","Undifferentiated shock with bedside echo","Acute encephalopathy with dangerous differential","GI bleed requiring transfusion","None of the above — I rarely bill CC"] },
+  { id:"q4", text:"What is the most common reason you don't bill critical care on a case that might qualify?", type:"single", options:["Not sure if the case actually qualifies","The patient improved quickly","I didn't have 30 minutes of documented time","I forgot to add the CC statement","Concerned about audit risk","I bill CC routinely when it applies"] },
+  { id:"q5", text:"How familiar are you with the EPIC critical care procedure note and how to use it?", type:"scale", labels:["Never used it","Use it routinely"] },
+  { id:"q6", text:"What would be most helpful for improving your CC documentation? (select all that apply)", type:"multi", options:["A list of cases that commonly qualify","SmartPhrase / dot-phrase templates","One-on-one chart review feedback","Examples of what a good CC note looks like","Knowing my own CC rate vs. peers","A short reference card for the ED"] },
+  { id:"q7", text:"Any other thoughts on critical care billing, documentation, or what would help the group? (optional)", type:"text", placeholder:"Free text — anything goes..." },
+];
+
+const ACTION_LABELS = {
+  send_dot_phrases:     { label:"Send Dot Phrases",     color:"#4a9eff", bg:"#0a1a2a" },
+  schedule_chart_review:{ label:"Schedule Chart Review", color:"#f87171", bg:"#1a0a0a" },
+  send_email_series:    { label:"Send Email Series",     color:"#facc15", bg:"#1a1a0a" },
+  reinforce_and_share:  { label:"Reinforce & Share",     color:"#4ade80", bg:"#0a1a0a" },
+  no_action_needed:     { label:"No Action Needed",      color:"#94a3b8", bg:"#0a0f14" },
+};
+
+const TIER_CFG = {
+  high_performer: { color:"#4ade80", label:"High Performer"  },
+  developing:     { color:"#facc15", label:"Developing"      },
+  needs_attention:{ color:"#f87171", label:"Needs Attention" },
+};
+
+function Header({ subtitle }) {
+  return (
+    <div style={{background:"linear-gradient(180deg,#0d1a26,#080e14)",borderBottom:"1px solid #1a2a3a",padding:"18px 32px",display:"flex",alignItems:"center",gap:14}}>
+      <div style={{width:40,height:40,background:"linear-gradient(135deg,#c8102e,#7b0019)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,boxShadow:"0 0 20px rgba(200,16,46,.3)"}}>⚕</div>
+      <div>
+        <div style={{fontSize:18,fontWeight:700,color:"#f1f5f9",letterSpacing:"-0.3px"}}>CritCareIQ</div>
+        <div style={{fontSize:11,color:"#475569",letterSpacing:"0.5px"}}>{subtitle}</div>
+      </div>
+    </div>
+  );
+}
+
+function Survey() {
+  const [step, setStep]         = useState(0);
+  const [name, setName]         = useState("");
+  const [answers, setAnswers]   = useState({});
+  const [phase, setPhase]       = useState("survey");
+  const [feedback, setFeedback] = useState("");
+  const [saveErr, setSaveErr]   = useState("");
+
+  const q        = QUESTIONS[step - 1];
+  const progress = step === 0 ? 0 : (step / (QUESTIONS.length + 1)) * 100;
+
+  function setAnswer(id, val) { setAnswers(a => ({ ...a, [id]: val })); }
+  function toggleMulti(id, opt) {
+    setAnswers(a => {
+      const cur = a[id] || [];
+      return { ...a, [id]: cur.includes(opt) ? cur.filter(x => x !== opt) : [...cur, opt] };
+    });
+  }
+  function canAdvance() {
+    if (step === 0) return name.trim().length > 0;
+    if (!q) return false;
+    if (q.type === "text")   return true;
+    if (q.type === "scale")  return answers[q.id] != null;
+    if (q.type === "single") return answers[q.id] != null;
+    if (q.type === "multi")  return (answers[q.id] || []).length > 0;
+    return false;
+  }
+
+  async function handleSubmit() {
+    setPhase("generating"); setSaveErr("");
+    try {
+      const [physicianFeedback, adminTag] = await Promise.all([
+        generatePhysicianFeedback(name.trim(), answers),
+        generateAdminActionTag(name.trim(), answers),
+      ]);
+      const actionSummary = adminTag.recommended_action
+        ? `${adminTag.tier} | ${adminTag.primary_gap} | ${adminTag.recommended_action} | priority: ${adminTag.priority}`
+        : "";
+      await saveToAirtable(name.trim(), answers, actionSummary);
+      setFeedback(physicianFeedback);
+      setPhase("done");
+    } catch(e) {
+      setSaveErr(e.message || "Something went wrong — please try again.");
+      setPhase("survey");
+    }
+  }
+
+  if (phase === "generating") return (
+    <div style={{minHeight:"100vh",background:"#080e14",display:"flex",flexDirection:"column"}}>
+      <Header subtitle="MERCY FITZGERALD · O52 · CC DOCUMENTATION SURVEY"/>
+      <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+        <div style={{textAlign:"center"}}>
+          <div style={{width:48,height:48,border:"3px solid #1a2a3a",borderTop:"3px solid #c8102e",borderRadius:"50%",margin:"0 auto 20px",animation:"spin 1s linear infinite"}}/>
+          <div style={{fontSize:15,color:"#4a9eff",marginBottom:8}}>Generating your personalized feedback...</div>
+          <div style={{fontSize:12,color:"#334155"}}>This takes just a moment</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (phase === "done") return (
+    <div style={{minHeight:"100vh",background:"#080e14",display:"flex",flexDirection:"column"}}>
+      <Header subtitle="MERCY FITZGERALD · O52 · CC DOCUMENTATION SURVEY"/>
+      <div style={{flex:1,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"40px 24px"}}>
+        <div style={{width:"100%",maxWidth:680}}>
+          <div style={{background:"#0a1520",border:"1px solid #1a4a1a",borderRadius:16,padding:"32px 36px",marginBottom:16}}>
+            <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
+              <div style={{width:36,height:36,borderRadius:"50%",background:"#1a4a1a",border:"2px solid #4ade80",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>✓</div>
+              <div>
+                <div style={{fontSize:18,fontWeight:700,color:"#f1f5f9"}}>Thanks, {name}.</div>
+                <div style={{fontSize:12,color:"#475569"}}>Your responses have been saved.</div>
+              </div>
+            </div>
+            {feedback && (
+              <div style={{borderTop:"1px solid #1a2a3a",paddingTop:20}}>
+                <div style={{fontSize:11,letterSpacing:2,color:"#334155",textTransform:"uppercase",marginBottom:14}}>Your Personalized Feedback</div>
+                <div style={{fontSize:14,color:"#c8d8e8",lineHeight:1.8,whiteSpace:"pre-wrap"}}>{feedback}</div>
+              </div>
+            )}
+          </div>
+          <div style={{fontSize:11,color:"#1e2a3a",textAlign:"center"}}>For QI/educational use only · CritcareIQ · Mercy Fitzgerald O52</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{minHeight:"100vh",background:"#080e14",display:"flex",flexDirection:"column"}}>
+      <Header subtitle="MERCY FITZGERALD · O52 · CC DOCUMENTATION SURVEY"/>
+      <div style={{height:3,background:"#1a2a3a",overflow:"hidden"}}>
+        <div style={{height:"100%",width:`${progress}%`,background:"linear-gradient(90deg,#c8102e,#4a9eff)",transition:"width 0.4s ease"}}/>
+      </div>
+      <div style={{flex:1,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"40px 24px"}}>
+        <div style={{width:"100%",maxWidth:680}}>
+          {step === 0 && (
+            <div style={{background:"#0a1520",border:"1px solid #1a2a3a",borderRadius:16,padding:"32px 36px"}}>
+              <div style={{fontSize:11,letterSpacing:3,color:"#334155",textTransform:"uppercase",marginBottom:10}}>Before we start</div>
+              <div style={{fontSize:20,fontWeight:600,color:"#f1f5f9",lineHeight:1.4,marginBottom:24}}>What's your name?</div>
+              <input value={name} onChange={e=>setName(e.target.value)}
+                onKeyDown={e=>e.key==="Enter"&&name.trim()&&setStep(1)}
+                placeholder="First name is fine..."
+                style={{width:"100%",background:"#0f1923",border:"1px solid #2a3a4a",borderRadius:8,padding:"13px 16px",color:"#e2e8f0",fontSize:16,fontFamily:"'DM Sans',sans-serif",outline:"none"}}/>
+              <div style={{display:"flex",justifyContent:"flex-end",marginTop:20}}>
+                <button onClick={()=>setStep(1)} disabled={!name.trim()}
+                  style={{background:name.trim()?"linear-gradient(135deg,#c8102e,#7b0019)":"#1a2a3a",border:"none",borderRadius:8,padding:"12px 28px",color:name.trim()?"#fff":"#334155",fontSize:13,fontWeight:600,cursor:name.trim()?"pointer":"not-allowed",fontFamily:"'DM Sans',sans-serif"}}>
+                  Start →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step > 0 && step <= QUESTIONS.length && q && (
+            <div style={{background:"#0a1520",border:"1px solid #1a2a3a",borderRadius:16,padding:"32px 36px"}}>
+              <div style={{fontSize:11,letterSpacing:3,color:"#334155",textTransform:"uppercase",marginBottom:10}}>Question {step} of {QUESTIONS.length}</div>
+              <div style={{fontSize:19,fontWeight:600,color:"#f1f5f9",lineHeight:1.45,marginBottom:24}}>{q.text}</div>
+
+              {q.type === "scale" && (
+                <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+                  <span style={{fontSize:12,color:"#475569"}}>{q.labels[0]}</span>
+                  {[1,2,3,4,5].map(v=>(
+                    <button key={v} className="scale-btn" onClick={()=>setAnswer(q.id,v)}
+                      style={{width:48,height:48,borderRadius:"50%",border:`2px solid ${answers[q.id]===v?"#4a9eff":"#2a3a4a"}`,background:answers[q.id]===v?"#162535":"transparent",color:answers[q.id]===v?"#4a9eff":"#475569",fontSize:17,fontWeight:600}}>
+                      {v}
+                    </button>
+                  ))}
+                  <span style={{fontSize:12,color:"#475569"}}>{q.labels[1]}</span>
+                </div>
+              )}
+
+              {(q.type === "multi" || q.type === "single") && (
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  {q.options.map(opt=>{
+                    const sel = q.type==="multi" ? (answers[q.id]||[]).includes(opt) : answers[q.id]===opt;
+                    return (
+                      <button key={opt} className="opt-btn"
+                        onClick={()=>q.type==="multi"?toggleMulti(q.id,opt):setAnswer(q.id,opt)}
+                        style={{display:"flex",alignItems:"center",gap:12,background:sel?"#0d1f35":"#0f1923",border:`1px solid ${sel?"#4a9eff":"#1a2a3a"}`,borderRadius:8,padding:"12px 16px",color:"#e2e8f0",fontSize:14}}>
+                        <div style={{width:18,height:18,borderRadius:q.type==="multi"?"4px":"50%",border:`2px solid ${sel?"#4a9eff":"#2a3a4a"}`,background:sel?"#4a9eff":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                          {sel&&<span style={{color:"#fff",fontSize:11,fontWeight:700}}>✓</span>}
+                        </div>
+                        {opt}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {q.type === "text" && (
+                <textarea value={answers[q.id]||""} onChange={e=>setAnswer(q.id,e.target.value)}
+                  placeholder={q.placeholder}
+                  style={{width:"100%",minHeight:110,background:"#0f1923",border:"1px solid #1a2a3a",borderRadius:8,padding:"13px 16px",color:"#e2e8f0",fontSize:14,fontFamily:"'DM Sans',sans-serif",resize:"vertical",outline:"none"}}/>
+              )}
+
+              {saveErr && <div style={{marginTop:12,fontSize:13,color:"#f87171"}}>⚠ {saveErr}</div>}
+
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:28}}>
+                <button onClick={()=>setStep(s=>s-1)}
+                  style={{background:"transparent",border:"1px solid #1a2a3a",borderRadius:8,padding:"10px 22px",color:"#475569",fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>
+                  ← Back
+                </button>
+                {step < QUESTIONS.length
+                  ? <button onClick={()=>setStep(s=>s+1)} disabled={!canAdvance()}
+                      style={{background:canAdvance()?"linear-gradient(135deg,#c8102e,#7b0019)":"#1a2a3a",border:"none",borderRadius:8,padding:"11px 28px",color:canAdvance()?"#fff":"#334155",fontSize:13,fontWeight:600,cursor:canAdvance()?"pointer":"not-allowed",fontFamily:"'DM Sans',sans-serif"}}>
+                      Next →
+                    </button>
+                  : <button onClick={handleSubmit} disabled={!canAdvance()}
+                      style={{background:canAdvance()?"linear-gradient(135deg,#c8102e,#7b0019)":"#1a2a3a",border:"none",borderRadius:8,padding:"11px 28px",color:canAdvance()?"#fff":"#334155",fontSize:13,fontWeight:600,cursor:canAdvance()?"pointer":"not-allowed",fontFamily:"'DM Sans',sans-serif"}}>
+                      Submit →
+                    </button>
+                }
+              </div>
+            </div>
+          )}
+          <div style={{marginTop:24,fontSize:11,color:"#1e2a3a",textAlign:"center"}}>
+            Responses stored securely for QI review by Casey · CritcareIQ · Mercy Fitzgerald O52
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  return <Survey/>;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
