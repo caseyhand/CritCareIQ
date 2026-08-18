@@ -106,12 +106,14 @@ const STATUS_CFG = {
   strong:{ bg:"#0a1f0a", border:"#1a5a32", text:"#4ade80", label:"Strong"    },
   watch: { bg:"#1a1a08", border:"#4a4a10", text:"#facc15", label:"Developing"},
   needs: { bg:"#1f0a0a", border:"#5a1a1a", text:"#f87171", label:"Needs Attn"},
+  insuf: { bg:"#0f1620", border:"#2a3a4a", text:"#64748b", label:"New"       },
 };
 
 function cellColor(v){ if(v===null||v===undefined)return"#334155"; if(v>=BENCHMARK)return"#4ade80"; if(v>=5)return"#facc15"; return"#f87171"; }
-function getStatus(p){ const vs=MONTH_KEYS.map(k=>p[k]).filter(v=>v!==null&&v!==undefined); if(!vs.length)return"needs"; const a=vs.reduce((s,v)=>s+v,0)/vs.length; return a>=BENCHMARK?"strong":a>=5?"watch":"needs"; }
+const STATUS_KEYS = ["apr26","may26","jun26"]; // last 3 FINAL months — update when July finalizes
+function getStatus(p){ const vs=STATUS_KEYS.map(k=>p[k]).filter(v=>v!==null&&v!==undefined); if(!vs.length)return"insuf"; const a=vs.reduce((s,v)=>s+v,0)/vs.length; return a>=BENCHMARK?"strong":a>=5?"watch":"needs"; }
 function getTrend(p){ const r=[p.apr26,p.may26,p.jun26].filter(v=>v!==null&&v!==undefined); if(r.length<2)return"flat"; const d=r[r.length-1]-r[0]; return d>1.5?"up":d<-1.5?"down":"flat"; }
-function getAvg(p){ const vs=MONTH_KEYS.map(k=>p[k]).filter(v=>v!==null&&v!==undefined); if(!vs.length)return null; return(vs.reduce((s,v)=>s+v,0)/vs.length).toFixed(1); }
+function getAvg(p){ const vs=STATUS_KEYS.map(k=>p[k]).filter(v=>v!==null&&v!==undefined); if(!vs.length)return null; return(vs.reduce((s,v)=>s+v,0)/vs.length).toFixed(1); }
 function trendIcon(t){ return t==="up"?"↑":t==="down"?"↓":"→"; }
 function trendColor(t){ return t==="up"?"#4ade80":t==="down"?"#f87171":"#94a3b8"; }
 
@@ -290,7 +292,7 @@ function App() {
             <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16}}>
               {["strong","watch","needs"].map(s=>{
                 const cfg=STATUS_CFG[s];
-                const docs=PHYSICIANS.filter(p=>getStatus(p)===s);
+                const docs=PHYSICIANS.filter(p=>getStatus(p)===s&&!p.lowVol);
                 return(
                   <div key={s} style={{background:cfg.bg,border:`1px solid ${cfg.border}`,borderRadius:12,padding:20}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
@@ -482,7 +484,7 @@ function App() {
                         {m}{sortBy===MONTH_KEYS[i]?" ▼":""}
                       </th>
                     ))}
-                    <th style={{textAlign:"center",padding:"10px 8px",color:"#475569",fontWeight:500,fontSize:12}}>Avg</th>
+                    <th style={{textAlign:"center",padding:"10px 8px",color:"#475569",fontWeight:500,fontSize:12}}>3-Mo Avg</th>
                     <th style={{textAlign:"center",padding:"10px 8px",color:"#475569",fontWeight:500,fontSize:12}}>Trend</th>
                   </tr>
                 </thead>
@@ -498,11 +500,11 @@ function App() {
                           <span style={{background:cfg.bg,border:`1px solid ${cfg.border}`,borderRadius:4,padding:"2px 8px",fontSize:10,color:cfg.text,fontWeight:500}}>{cfg.label}</span>
                         </td>
                         {MONTH_KEYS.map((k,i)=>(
-                          <td key={k} style={{padding:"9px 8px",textAlign:"center",fontFamily:"'DM Mono',monospace",fontSize:12,color:cellColor(p[k]),opacity:i===5?0.8:1}}>
+                          <td key={k} style={{padding:"9px 8px",textAlign:"center",fontFamily:"'DM Mono',monospace",fontSize:12,color:cellColor(p[k]),opacity:i===8?0.8:1}}>
                             {p[k]!==null&&p[k]!==undefined?`${p[k]}%`:"—"}
                           </td>
                         ))}
-                        <td style={{padding:"9px 8px",textAlign:"center",fontFamily:"'DM Mono',monospace",fontSize:12,color:"#94a3b8",fontWeight:600}}>{getAvg(p)}%</td>
+                        <td style={{padding:"9px 8px",textAlign:"center",fontFamily:"'DM Mono',monospace",fontSize:12,color:"#94a3b8",fontWeight:600}}>{getAvg(p)!==null?`${getAvg(p)}%`:"—"}</td>
                         <td style={{padding:"9px 8px",textAlign:"center",fontSize:16,color:trendColor(tr)}}>{trendIcon(tr)}</td>
                       </tr>
                     );
@@ -516,6 +518,7 @@ function App() {
               <span style={{color:"#f87171"}}>■ Red &lt;5%</span>
               <span style={{color:"#4ade80"}}>Jun '26 final · Jul '26 partial thru 8/17</span>
               <span>* Low volume = volatile rate</span>
+              <span>Status & avg = last 3 final months (Apr–Jun) · partial months excluded</span>
             </div>
           </div>
         )}
