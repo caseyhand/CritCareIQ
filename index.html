@@ -22,15 +22,41 @@
   select { background: #0f1923; border: 1px solid #2a3a4a; border-radius: 6px; padding: 6px 12px; color: #e2e8f0; font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
   table { border-collapse: collapse; width: 100%; }
   input[type=range] { accent-color: #c8102e; cursor: pointer; width: 100%; }
-  .seg { display: inline-flex; background: #0f1923; border: 1px solid #2a3a4a; border-radius: 8px; overflow: hidden; }
-  .seg button { background: transparent; border: none; color: #475569; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 7px 14px; cursor: pointer; }
-  .seg button.on { background: #1a2a3a; color: #e2e8f0; }
-  .ccar-row { background: #0a1520; border: 1px solid #1a2a3a; border-radius: 10px; padding: 14px 18px; display: grid; grid-template-columns: 32px minmax(150px,1.4fr) 90px 90px 100px minmax(180px,2fr) 80px; gap: 14px; align-items: center; cursor: pointer; width: 100%; color: inherit; font: inherit; text-align: left; transition: background .15s; }
+  :focus-visible { outline: 2px solid #60a5fa; outline-offset: 2px; }
+  .tab-btn { min-height: 44px; }
+  .tab-btn[aria-selected="true"] { font-weight: 600; }
+  .seg { display: inline-flex; flex-wrap: wrap; background: #0f1923; border: 1px solid #2a3a4a; border-radius: 8px; overflow: hidden; }
+  .seg button { background: transparent; border: none; border-bottom: 2px solid transparent; color: #8a97ab; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 10px 14px; min-height: 40px; cursor: pointer; }
+  .seg button.on { background: #1a2a3a; color: #e2e8f0; font-weight: 700; border-bottom-color: #c8102e; }
+  .seg button.on::before { content: "✓ "; color: #4ade80; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 22px; }
+  .status-strip { display: flex; flex-direction: column; gap: 4px; background: #0f1923; border: 1px solid #1a2a3a; border-radius: 8px; padding: 10px 14px; font-size: 11px; color: #94a3b8; line-height: 1.5; margin-bottom: 14px; }
+  .status-strip b { color: #cbd5e1; font-weight: 600; margin-right: 6px; }
+  .ccar-list { display: flex; flex-direction: column; gap: 8px; }
+  .ccar-row { background: #0a1520; border: 1px solid #1a2a3a; border-radius: 10px; padding: 14px 18px; display: grid; grid-template-columns: 32px minmax(150px,1.4fr) 90px 90px 110px minmax(180px,2fr) 80px; grid-template-areas: "rank who cases raw conv bar rr"; gap: 14px; align-items: center; cursor: pointer; width: 100%; color: inherit; font: inherit; text-align: left; transition: background .15s; }
   .ccar-row:hover { background: #131e2a; }
   .ccar-row.sel { border-color: #2a3a4a; background: #101c28; border-radius: 10px 10px 0 0; }
-  .ccar-hdr { display: grid; grid-template-columns: 32px minmax(150px,1.4fr) 90px 90px 100px minmax(180px,2fr) 80px; gap: 14px; padding: 0 18px 8px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #475569; }
+  .ccar-hdr { display: grid; grid-template-columns: 32px minmax(150px,1.4fr) 90px 90px 110px minmax(180px,2fr) 80px; gap: 14px; padding: 0 18px 8px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #8a97ab; }
+  .ccar-hdr .r { text-align: right; }
   .ccar-row > *, .ccar-hdr > * { min-width: 0; }
+  .c-rank { grid-area: rank; } .c-who { grid-area: who; } .c-cases { grid-area: cases; text-align: right; } .c-raw { grid-area: raw; text-align: right; } .c-conv { grid-area: conv; text-align: right; } .c-bar { grid-area: bar; } .c-rr { grid-area: rr; text-align: right; }
+  .c-cases .mono, .c-raw .mono, .c-conv .mono { font-size: 13px; } .c-cases .mono { font-size: 12px; color: #cbd5e1; }
+  .mono { font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; }
+  .mlabel { display: none; }
+  .ccar-detail { background: #0d1a26; border: 1px solid #1a2a3a; border-top: none; border-radius: 0 0 10px 10px; padding: 16px 18px; display: grid; grid-template-columns: minmax(260px,1fr) minmax(300px,1.3fr); gap: 20px; }
   .pill { display: inline-block; font-size: 10px; letter-spacing: .5px; padding: 3px 8px; border-radius: 6px; border: 1px solid; white-space: nowrap; }
+  .grid4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+  .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  @media (max-width: 760px) {
+    .ccar-hdr { display: none; }
+    .ccar-row { grid-template-columns: 32px 1fr 1fr 1fr; grid-template-areas: "rank who who who" "cases raw conv rr" "bar bar bar bar"; gap: 10px 12px; padding: 12px 14px; align-items: start; }
+    .c-cases, .c-raw, .c-conv, .c-rr { text-align: left; }
+    .mlabel { display: block; font-size: 9px; letter-spacing: .8px; text-transform: uppercase; color: #8a97ab; margin-bottom: 2px; }
+    .ccar-detail { grid-template-columns: 1fr; padding: 12px; }
+    .page-pad { padding: 20px 16px !important; }
+    .hdr-pad { padding: 14px 16px !important; }
+    .nav-pad { padding: 0 8px !important; }
+  }
 </style>
 </head>
 <body>
@@ -38,7 +64,7 @@
   <div style="background:#0a1520;border:1px solid #1a2a3a;border-radius:16px;padding:48px 40px;width:100%;max-width:380px;text-align:center;font-family:'DM Sans',sans-serif;">
     <div style="width:52px;height:52px;background:linear-gradient(135deg,#c8102e,#7b0019);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 20px;box-shadow:0 0 24px rgba(200,16,46,.3);">⚕</div>
     <div style="font-size:22px;font-weight:700;color:#f1f5f9;margin-bottom:4px;">CritCareIQ</div>
-    <div style="font-size:12px;color:#475569;letter-spacing:0.5px;margin-bottom:32px;">MERCY FITZGERALD · O52</div>
+    <div style="font-size:12px;color:#8a97ab;letter-spacing:0.5px;margin-bottom:32px;">MERCY FITZGERALD · O52</div>
     <input id="pw-input" type="password" placeholder="Enter access code" autocomplete="off"
       style="width:100%;background:#0f1923;border:1px solid #2a3a4a;border-radius:8px;padding:12px 16px;color:#e2e8f0;font-size:14px;font-family:'DM Mono',monospace;outline:none;letter-spacing:2px;text-align:center;margin-bottom:12px;box-sizing:border-box;" />
     <div id="pw-err" style="font-size:12px;color:#f87171;margin-bottom:12px;display:none;">Incorrect code — try again</div>
@@ -84,9 +110,15 @@ const LATEST_FINAL = "aug26";                 // most recent fully-coded month
 const CODED = { apr26:"99.1%", may26:"99.0%", jun26:"98.5%", jul26:"97.6%", aug26:"95.7%", sep26:"87.7%" };   // % of charts coded (Aug as of 9/24/26, Sep as of 10/13/26)
 const LABEL = k => MONTHS[MONTH_KEYS.indexOf(k)].replace("*","");
 const DATA_ASOF = "10/13/26";
-const REV_PER_CC = 162;                       // $/encounter, Medicare blended (site assumption)
+const REV_PER_CC = 162;                       // $ per chart: Medicare-blended DIFFERENCE between a 99291 and the 99285 it would otherwise bill as
 const DOWNCODE_KEY = "aug26";                 // month the RCM downcode callout refers to
 const AUG_DOWNCODES = 12;                     // RCM feedback 9/22/26: CC time statements billed 99285
+const AUG_DOWNCODES_FIXABLE = 8;              // of those, ~8 had a documentation gap (intervention as plan, dx mismatch, route/rewarming); ~4 were observation-only and not CC
+const REV_NOTE = "Medicare-blended increment of a 99291 over the 99285 it replaces";
+// Data completeness, one rule everywhere: provisional <95% coded · near-final 95–98.9% · final ≥99% (or no coded figure = closed)
+function codedPct(k){ const c=CODED[k]; return c?parseFloat(c):null; }
+function codedStatus(k){ const c=codedPct(k); return c===null?"final":c>=99?"final":c>=95?"near-final":"provisional"; }
+function codedLabel(k){ const c=CODED[k]; return `${LABEL(k)} ${codedStatus(k)}${c?` (${c} coded)`:""}`; }
 const GROUP_RATES = { nov25:4.9, dec25:4.8, jan26:3.8, feb26:4.4, mar26:5.2, apr26:6.0, may26:5.8, jun26:6.4, jul26:5.9, aug26:5.3, sep26:6.4 };
 
 /* @@CC_DATA START — generated by critcareiq_update.py; REPL_RAW is kept from the existing file, everything else is regenerated ── */
@@ -177,10 +209,10 @@ const LINE_COLORS = ["#e63946","#2a9d8f","#e9c46a","#f4a261","#4cc9f0","#c77dff"
                      "#e76f51","#48cae4","#f9c74f","#264653","#6d6875"];
 
 const STATUS_CFG = {
-  strong:{ bg:"#0a1f0a", border:"#1a5a32", text:"#4ade80", label:"Strong"    },
-  watch: { bg:"#1a1a08", border:"#4a4a10", text:"#facc15", label:"Developing"},
-  needs: { bg:"#1f0a0a", border:"#5a1a1a", text:"#f87171", label:"Needs Attn"},
-  insuf: { bg:"#0f1620", border:"#2a3a4a", text:"#64748b", label:"New"       },
+  strong:{ bg:"#0a1f0a", border:"#1a5a32", text:"#4ade80", label:"Raw ≥8%"   },
+  watch: { bg:"#1a1a08", border:"#4a4a10", text:"#facc15", label:"Raw 5–8%"  },
+  needs: { bg:"#1f0a0a", border:"#5a1a1a", text:"#f87171", label:"Raw <5%"   },
+  insuf: { bg:"#0f1620", border:"#2a3a4a", text:"#64748b", label:"No data"   },
 };
 
 function cellColor(v){ if(v===null||v===undefined)return"#334155"; if(v>=BENCHMARK)return"#4ade80"; if(v>=5)return"#facc15"; return"#f87171"; }
@@ -208,13 +240,13 @@ function SvgChart({ data, lines, yMax=14, height=240 }) {
         {yTicks.map(v=>(
           <g key={v}>
             <line x1={PL} x2={VW-PR} y1={yS(v)} y2={yS(v)} stroke="#1a2a3a" strokeWidth={1}/>
-            <text x={PL-6} y={yS(v)+4} textAnchor="end" fill="#475569" fontSize={10}>{v}%</text>
+            <text x={PL-6} y={yS(v)+4} textAnchor="end" fill="#8a97ab" fontSize={10}>{v}%</text>
           </g>
         ))}
         <line x1={PL} x2={VW-PR} y1={yS(BENCHMARK)} y2={yS(BENCHMARK)} stroke="#facc15" strokeWidth={1.5} strokeDasharray="6 4"/>
         <text x={VW-PR+4} y={yS(BENCHMARK)+4} fill="#facc15" fontSize={9}>8%</text>
         {data.map((d,i)=>(
-          <text key={i} x={xS(i)} y={VH-4} textAnchor="middle" fill={d.partial?"#facc15":"#475569"} fontSize={9}>{d.month}</text>
+          <text key={i} x={xS(i)} y={VH-4} textAnchor="middle" fill={d.partial?"#facc15":"#8a97ab"} fontSize={9}>{d.month}</text>
         ))}
         {lines.map((ln,li)=>{
           const pts=data.map((d,i)=>({x:xS(i),y:yS(d[ln.key]??-999),v:d[ln.key],m:d.month,ok:d[ln.key]!==null&&d[ln.key]!==undefined}));
@@ -238,7 +270,7 @@ function SvgChart({ data, lines, yMax=14, height=240 }) {
         <div style={{position:"absolute",top:Math.max(tip.y-50,0),left:Math.min((tip.x/900*100)+2,65)+"%",
           background:"#0f1923",border:"1px solid #2a3a4a",borderRadius:8,padding:"8px 12px",
           fontSize:12,color:"#e2e8f0",pointerEvents:"none",whiteSpace:"nowrap",zIndex:20}}>
-          <div style={{color:"#475569",marginBottom:2}}>{tip.month}</div>
+          <div style={{color:"#8a97ab",marginBottom:2}}>{tip.month}</div>
           <div style={{fontFamily:"'DM Mono',monospace",fontWeight:600}}>{tip.label}: {tip.val}%</div>
         </div>
       )}
@@ -298,12 +330,12 @@ function ccReason(p, cur, base, pool, firstWin, gconv){
   const pit = cur.e45s!==null ? cur.e45s >= 0.20 : (cur.l5s!==null && cur.l5s < 0.45);
   if (pit) tags.push({t: cur.e45s!==null ? `PIT-heavy · ${Math.round(cur.e45s*100)}% ESI 4–5` : "PIT signature · check schedule", c:"warn"});
   const first = ccAgg(p, firstWin, base, pool);
-  if (first.k===3 && cur.k===3 && cur.d - first.d >= 8) tags.push({t:`Improved +${(cur.d-first.d).toFixed(0)} vs ${CC_LABEL(firstWin[0])}–${CC_LABEL(firstWin[2])}`, c:"good"});
+  if (first.k===3 && cur.k===3 && cur.d - first.d >= 8) tags.push({t:`${CC_BASE_LABEL[base]} +${(cur.d-first.d).toFixed(0)} vs ${CC_LABEL(firstWin[0])}–${CC_LABEL(firstWin[2])}`, c:"good"});
   const ms = POOL_MONTHS(pool);
   const early = ms.slice(0,3).map(m=>ccPoint(p,m,pool)).filter(Boolean);
-  if (early.length>=2){ const ec=early.reduce((s,x)=>s+x.cc,0)/early.reduce((s,x)=>s+x.pool,0); if (cur.conv!==null && (ec-cur.conv)/gconv >= 0.4) tags.push({t:"Declining vs spring", c:"bad"}); }
+  if (early.length>=2){ const ec=early.reduce((s,x)=>s+x.cc,0)/early.reduce((s,x)=>s+x.pool,0); if (cur.conv!==null && (ec-cur.conv)/gconv >= 0.4) tags.push({t:"Review: down vs spring", c:"bad"}); }
   const sick = cur.e45s!==null ? cur.e45s <= 0.10 : (cur.l5s!==null && cur.l5s >= 0.6);
-  if (sick && cur.conv!==null && cur.conv < gconv*0.75) tags.push({t:"Sick mix, low conversion", c:"bad"});
+  if (sick && cur.conv!==null && cur.conv < gconv*0.75) tags.push({t:"Review: sick mix, low conversion", c:"bad"});
   return tags;
 }
 const CC_PILL = { good:["#0a1f0a","#1a5a32","#4ade80"], warn:["#1a1a08","#4a4a10","#facc15"], bad:["#1f0a0a","#5a1a1a","#f87171"], info:["#08101a","#10203a","#60a5fa"] };
@@ -332,51 +364,56 @@ function CcSpark({ p, base, pool }){
   const ticks = pool==="esi" ? [0,0.2,0.4] : [0,0.1,0.2];
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",maxWidth:460,display:"block"}}>
-      {ticks.map(t=> t<=yMax && <g key={t}><line x1={PL} x2={W-PR} y1={yS(t)} y2={yS(t)} stroke="#1a2a3a"/><text x={PL-5} y={yS(t)+3} textAnchor="end" fill="#475569" fontSize="9">{Math.round(t*100)}%</text></g>)}
+      {ticks.map(t=> t<=yMax && <g key={t}><line x1={PL} x2={W-PR} y1={yS(t)} y2={yS(t)} stroke="#1a2a3a"/><text x={PL-5} y={yS(t)+3} textAnchor="end" fill="#8a97ab" fontSize="9">{Math.round(t*100)}%</text></g>)}
       <polyline points={pts.map(d=>`${xS(d.i)},${yS(d.g)}`).join(" ")} fill="none" stroke="#facc15" strokeWidth="1.5" strokeDasharray="5 4"/>
       {segs.map((s,i)=><polyline key={i} points={s.map(d=>`${xS(d.i)},${yS(d.c)}`).join(" ")} fill="none" stroke="#c8102e" strokeWidth="2"/>)}
       {pts.filter(d=>d.c!==null).map(d=><circle key={d.i} cx={xS(d.i)} cy={yS(d.c)} r="4" fill="#c8102e" stroke="#080e14" strokeWidth="2"/>)}
-      {pts.map(d=><text key={d.i} x={xS(d.i)} y={H-6} textAnchor="middle" fill={d.m===PARTIAL_KEY?"#facc15":"#475569"} fontSize="9">{CC_LABEL(d.m)}</text>)}
+      {pts.map(d=><text key={d.i} x={xS(d.i)} y={H-6} textAnchor="middle" fill={d.m===PARTIAL_KEY?"#facc15":"#8a97ab"} fontSize="9">{CC_LABEL(d.m)}</text>)}
     </svg>
   );
 }
 function CcDetail({ p, win, base, pool, windows }){
   const ms = windows[win]; const g = ccGroup(pool); const allMs = CC_MONTH_KEYS;
   const e = ESI_BY_NAME[p.name] || {};
+  const unit = pool==="esi" ? "per 100 ESI 1–2" : "conversion";
   return (
-    <div style={{background:"#0d1a26",border:"1px solid #1a2a3a",borderTop:"none",borderRadius:"0 0 10px 10px",padding:"16px 18px",display:"grid",gridTemplateColumns:"minmax(260px,1fr) minmax(300px,1.3fr)",gap:20}}>
+    <div className="ccar-detail">
       <div style={{minWidth:0}}>
-        <div style={{fontSize:11,color:"#475569",letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>CC conversion by month · {pool==="esi"?"ESI 1–2 pool":"Level 5 pool"}</div>
+        <div style={{fontSize:11,color:"#64748b",letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>CC {unit} by month · {pool==="esi"?"ESI 1–2 pool":"Level 5 pool"}</div>
         <CcSpark p={p} base={base} pool={pool}/>
-        <div style={{display:"flex",gap:16,fontSize:11,color:"#475569",marginTop:4,flexWrap:"wrap"}}>
+        <div style={{display:"flex",gap:16,fontSize:11,color:"#64748b",marginTop:4,flexWrap:"wrap"}}>
           <span><span style={{color:"#c8102e"}}>●</span> {p.name.split(",")[0]}</span>
-          <span><span style={{color:"#facc15"}}>◉</span> {base==="target"?"8% target, in conversion terms":base==="repl"?"Pre-series (4.5%) documentation, in conversion terms":"Group conversion that month"}</span>
+          <span><span style={{color:"#facc15"}}>◉</span> {base==="target"?"8% target, in conversion terms":base==="repl"?"Pre-series (4.5%) benchmark, in conversion terms":"Group conversion that month"}</span>
         </div>
       </div>
       <div style={{minWidth:0}}>
-        <div style={{fontSize:11,color:"#475569",letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Month by month</div>
+        <div style={{fontSize:11,color:"#64748b",letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>Month by month</div>
         <div style={{overflowX:"auto"}}><table style={{fontSize:12}}>
-          <thead><tr style={{color:"#475569",fontSize:10,letterSpacing:".5px"}}>
-            {["","Cases","L5 %","ESI 1–2","ESI 4–5 %","Hrs","CC","Conv","Δ"].map((h,i)=><th key={i} style={{textAlign:h===""?"left":"right",padding:"2px 6px",fontWeight:500,whiteSpace:"nowrap"}}>{h}</th>)}
+          <thead><tr style={{color:"#64748b",fontSize:10,letterSpacing:".5px"}}>
+            {[["",""],["Cases","billing cases"],["L5 %","Level 5 share of cases"],["ESI 1–2","triage ESI 1–2 patients (weekly sheet)"],["ESI 4–5 %","triage ESI 4–5 share"],["Hrs","hours worked"],["CC","99291 charts"],["Pool","selected pool"],["Base","baseline rate applied this month"],["xCC","expected CC = pool × base"],["Conv",pool==="esi"?"CC per 100 ESI 1–2":"CC ÷ pool"],["Δ","CC − xCC"]].map(([h,t],i)=><th key={i} title={t} style={{textAlign:h===""?"left":"right",padding:"2px 6px",fontWeight:500,whiteSpace:"nowrap"}}>{h}</th>)}
           </tr></thead>
           <tbody>{allMs.map(m=>{ const v=p[m]; const ev=e[m];
-            if(!v) return <tr key={m}><td style={{padding:"3px 6px",color:"#475569"}}>{CC_LABEL(m)}</td><td colSpan="8" style={{textAlign:"right",padding:"3px 6px",color:"#334155"}}>no shifts coded</td></tr>;
+            if(!v) return <tr key={m}><td style={{padding:"3px 6px",color:"#64748b"}}>{CC_LABEL(m)}</td><td colSpan="11" style={{textAlign:"right",padding:"3px 6px",color:"#8a97ab"}}>no shifts coded</td></tr>;
             const x = ccPoint(p,m,pool); const inWin=ms.includes(m); const usable = !!x && POOL_MONTHS(pool).includes(m);
-            const cv = x&&x.pool ? x.cc/x.pool : null; const d = usable ? x.cc - x.pool*ccBase(g,m,base) : null;
+            const b = usable ? ccBase(g,m,base) : null; const xcc = usable ? x.pool*b : null;
+            const cv = x&&x.pool ? x.cc/x.pool : null; const d = usable ? x.cc - xcc : null;
             const td = (val,extra)=><td style={Object.assign({textAlign:"right",padding:"3px 6px",fontFamily:"'DM Mono',monospace",whiteSpace:"nowrap"},extra||{})}>{val}</td>;
-            return <tr key={m} style={{color:inWin?"#e2e8f0":"#64748b",background:inWin?"#0f1923":"transparent"}}>
-              <td style={{padding:"3px 6px",whiteSpace:"nowrap"}}>{CC_LABEL(m)}{ESI_PARTIAL[m]&&<span style={{color:"#facc15",fontSize:9,marginLeft:4}}>ESI {ESI_PARTIAL[m]}</span>}</td>
+            return <tr key={m} style={{color:inWin?"#e2e8f0":"#8a97ab",background:inWin?"#0f1923":"transparent"}}>
+              <td style={{padding:"3px 6px",whiteSpace:"nowrap"}}>{CC_LABEL(m)}{ESI_PARTIAL[m]&&<span style={{color:"#facc15",fontSize:9,marginLeft:4}}>ESI {ESI_PARTIAL[m]}</span>}{m===PARTIAL_KEY&&<span style={{color:"#facc15",fontSize:9,marginLeft:4}}>{codedStatus(m)}</span>}</td>
               {td(v[0])}
               {td(Math.round(v[2]/v[0]*100),{color:v[2]/v[0]<0.45?"#facc15":"inherit"})}
               {td(ev?ev[1]+ev[2]:"—")}
               {td(ev?Math.round((ev[4]+ev[5])/ev[0]*100):"—",{color:ev&&(ev[4]+ev[5])/ev[0]>=0.20?"#facc15":"inherit"})}
               {td(ev?Math.round(ev[6]):"—")}
               {td(v[1])}
-              {td(usable?ccPct(cv):"—")}
+              {td(usable?x.pool:"—")}
+              {td(usable?ccPct(b):"—")}
+              {td(usable?xcc.toFixed(1):"—")}
+              {td(usable?(pool==="esi"?(cv*100).toFixed(1):ccPct(cv)):"—")}
               {td(d===null?"—":ccSigned(d),{color:d===null?"inherit":d>=0?"#4ade80":"#f87171"})}
             </tr>; })}</tbody>
         </table></div>
-        <div style={{fontSize:11,color:"#475569",marginTop:8,lineHeight:1.5}}>Highlighted rows are the {win} window. Yellow L5 % (under 45%) or ESI 4–5 % (20%+) = provider-in-triage signature. Conv and Δ use the selected pool; months without complete ESI data are blank in ESI mode.</div>
+        <div style={{fontSize:11,color:"#64748b",marginTop:8,lineHeight:1.5}}>Highlighted rows are the {win} window. Yellow L5 % (under 45%) or ESI 4–5 % (20%+) = provider-in-triage signature. Expected CC (xCC) is computed per month with that month's baseline rate, then summed for the window. Months without complete ESI data are blank in ESI mode.</div>
       </div>
     </div>
   );
@@ -386,89 +423,113 @@ function CcarTab(){
   const windows = useMemo(()=>ccWindows(pool), [pool]);
   const winKeys = Object.keys(windows);
   const [win, setWinRaw] = useState(winKeys[0]);
-  const setPoolSafe = p => { setPool(p); const wk = Object.keys(ccWindows(p)); if(!wk.includes(win)) setWinRaw(wk[0]); };
+  const [winNote, setWinNote] = useState("");
+  const setPoolSafe = p => { const wk = Object.keys(ccWindows(p)); setPool(p);
+    if(!wk.includes(win)) { setWinRaw(wk[0]); setWinNote(`Window changed from ${win} to ${wk[0]}: ${p==="esi"?"triage ESI data is complete only through "+CC_LABEL(ESI_COMPLETE[ESI_COMPLETE.length-1]):"billing data runs through "+CC_LABEL(CC_MONTH_KEYS[CC_MONTH_KEYS.length-1])}.`); } else setWinNote(""); };
   const [base, setBase] = useState("repl");
   const [sel, setSel] = useState("");
   const MIN_CASES = 150;
   const ms = POOL_MONTHS(pool); const firstWin = ms.slice(0,3); const g = ccGroup(pool);
   const curWin = windows[win] || windows[winKeys[0]];
-  const rows = useMemo(()=> CC_COUNTS.map(p=>({p, a:ccAgg(p, curWin, base, pool)}))
-    .filter(r=>r.a.cases>=MIN_CASES && r.a.pool>0).sort((x,y)=>y.a.d-x.a.d), [win, base, pool]);
+  const allRows = useMemo(()=> CC_COUNTS.map(p=>({p, a:ccAgg(p, curWin, base, pool)})).filter(r=>r.a.k>0), [win, base, pool]);
+  const rows = useMemo(()=> allRows.filter(r=>r.a.cases>=MIN_CASES && r.a.pool>0).sort((x,y)=>y.a.d-x.a.d), [allRows]);
+  const hidden = allRows.filter(r=>!(r.a.cases>=MIN_CASES && r.a.pool>0));
   const rawRank = useMemo(()=>{ const s=[...rows].sort((x,y)=>y.a.raw-x.a.raw); const m={}; s.forEach((r,i)=>m[r.p.name]=i+1); return m; }, [rows]);
   const maxAbs = Math.max(...rows.map(r=>Math.abs(r.a.d)), 1);
   const lastK = ms[ms.length-1]; const last = g[lastK];
   const gapCharts = Math.round((BENCHMARK/100)*last.N - last.CC);
   const sumD = rows.reduce((s,r)=>s+r.a.d,0);
+  const sumAll = allRows.reduce((s,r)=>s+r.a.d,0);
+  const sumHidden = sumAll - sumD;
   const atPar = rows.filter(r=>r.a.d>=0).length;
-  const gconv = curWin.reduce((s,m)=>s+g[m].CC,0)/curWin.reduce((s,m)=>s+g[m].P,0);
+  const winCC = curWin.reduce((s,m)=>s+g[m].CC,0), winPool = curWin.reduce((s,m)=>s+g[m].P,0), winN = curWin.reduce((s,m)=>s+g[m].N,0);
+  const gconv = winCC/winPool;
   const statName = CC_BASE_LABEL[base];
-  const poolName = pool==="esi" ? "ESI 1–2 patients" : "high-acuity charts (99285 + 99291)";
+  const isEsi = pool==="esi";
+  const convLabel = isEsi ? "CC per 100 ESI 1–2" : "Conv";
+  const fmtConv = x => x===null ? "—" : isEsi ? (x*100).toFixed(1) : ccPct(x);
+  const poolName = isEsi ? "ESI 1–2 encounters" : "high-acuity charts (99285 + 99291)";
+  const baseName = base==="target" ? "8% target" : base==="repl" ? "pre-series benchmark (4.5% raw, Nov '25–Mar '26)" : "group average";
+  const complete = curWin.map(m=>`${CC_LABEL(m)} ${codedStatus(m)}${isEsi&&ESI_PARTIAL[m]?` (ESI ${ESI_PARTIAL[m]})`:""}`).join(" · ");
+  const tiles = [
+    {label:`${CC_LABEL(lastK)} CC ${isEsi?"per 100 ESI 1–2":"conversion"}`, value: isEsi ? (last.conv*100).toFixed(1) : ccPct(last.conv), color:"#facc15", sub:`${last.CC} CC charts${isEsi?" (billing)":""} ÷ ${last.P} ${poolName}${isEsi?" (weekly sheet)":""}${CODED[lastK]?` · ${codedStatus(lastK)}, ${CODED[lastK]} coded`:""}`},
+    {label:`${isEsi?"Rate":"Conversion"} needed for 8%`, value: isEsi ? (last.cstar*100).toFixed(1) : ccPct(last.cstar), color:"#f87171", sub:`${CC_LABEL(lastK)} net group shortfall: ${gapCharts} charts · raw rate ${ccPct(last.raw)} vs ${BENCHMARK}% target`},
+    {label:`${win} · at or above ${base==="target"?"target":base==="repl"?"benchmark":"average"}`, value:<span>{atPar} <span style={{fontSize:14,color:"#8a97ab",fontWeight:500}}>of {rows.length} shown</span></span>, color:"#4ade80", sub:`physicians with ≥${MIN_CASES} cases in the window whose CC charts meet or exceed the ${baseName} on their own patients`},
+    {label:`${win} · ${statName} total`, value:<span style={{fontFamily:"'DM Mono',monospace"}}>{ccSigned(sumD)}</span>, color:base==="repl"?"#4ade80":"#94a3b8",
+      sub: base==="group" ? `over the ${rows.length} physicians shown. All ${allRows.length} physicians sum to ${Math.abs(sumAll)<0.05?"0.0":ccSigned(sumAll)} by construction; the ${hidden.length} low-volume physicians not shown account for ${ccSigned(sumHidden)}.`
+         : base==="target" ? `charts short of 8% over the window, summed over physicians shown · all physicians: ${ccSigned(sumAll)} (equals the net group shortfall)`
+         : `CC charts above the pre-series benchmark over the window, summed over physicians shown · all physicians: ${ccSigned(sumAll)}`},
+  ];
   return (
     <div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:14,marginBottom:22}}>
-        {[
-          {label:`${CC_LABEL(lastK)} CC conversion`, value:ccPct(last.conv), color:"#facc15", sub:`${last.CC} of ${last.P} ${poolName} became critical care${CODED[lastK]?` · ${CODED[lastK]} coded`:""}`},
-          {label:"Conversion needed for 8%", value:ccPct(last.cstar), color:"#f87171", sub:`Gap: ${gapCharts} charts · raw rate ${ccPct(last.raw)} vs ${BENCHMARK}% target`},
-          {label:`${win} · above par`, value:<span>{atPar} <span style={{fontSize:14,color:"#64748b",fontWeight:500}}>of {rows.length}</span></span>, color:"#4ade80", sub:`physicians at or above ${base==="target"?"the 8% target":base==="repl"?"pre-series documentation":"group average"} on their own patients`},
-          {label:`${win} · ${statName} total`, value:<span style={{fontFamily:"'DM Mono',monospace"}}>{ccSigned(sumD)}</span>, color:base==="repl"?"#4ade80":sumD>=-1?"#94a3b8":"#f87171", sub:base==="target"?"charts short of 8% over the window, summed across physicians":base==="repl"?"CC charts produced beyond pre-series (4.5%) documentation — the project's impact":"sums to zero by construction — a ranking, not a total"},
-        ].map((c,i)=>(
+      <div className="tiles">
+        {tiles.map((c,i)=>(
           <div key={i} style={{background:"#0a1520",border:"1px solid #1a2a3a",borderRadius:12,padding:"18px 20px"}}>
-            <div style={{fontSize:11,color:"#475569",letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>{c.label}</div>
+            <div style={{fontSize:11,color:"#8a97ab",letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>{c.label}</div>
             <div style={{fontSize:28,fontWeight:700,color:c.color,letterSpacing:"-1px",marginBottom:4}}>{c.value}</div>
-            <div style={{fontSize:12,color:"#64748b",lineHeight:1.5}}>{c.sub}</div>
+            <div style={{fontSize:12,color:"#8a97ab",lineHeight:1.5}}>{c.sub}</div>
           </div>
         ))}
       </div>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",flexWrap:"wrap",gap:12,marginBottom:14}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",flexWrap:"wrap",gap:12,marginBottom:10}}>
         <div>
           <div style={{fontSize:16,fontWeight:600,color:"#e2e8f0",marginBottom:4}}>{statName} Leaderboard · {win}</div>
-          <div style={{fontSize:12,color:"#475569",maxWidth:640,lineHeight:1.5}}>Ranked by <b style={{color:"#94a3b8"}}>{statName}</b>: your CC charts minus what {base==="target"?"an 8% group":base==="repl"?"pre-series (4.5%) documentation":"the group's conversion rate"} would have produced on your {pool==="esi"?"ESI 1–2":"Level 5"} patients. PIT shifts don't count against you. ≥{MIN_CASES} cases in window.</div>
+          <div style={{fontSize:12,color:"#8a97ab",maxWidth:680,lineHeight:1.5}}>Ranked by <b style={{color:"#cbd5e1"}}>{statName}</b>: your CC charts minus what the {baseName} would have produced on your {isEsi?"ESI 1–2":"Level 5"} patients. Low-acuity encounters (PIT, fast track) dilute this far less than raw CC %, though other case-mix differences remain. Flags are prompts for chart review, not conclusions.</div>
         </div>
         <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-          <div className="seg"><button className={pool==="l5"?"on":""} onClick={()=>setPoolSafe("l5")}>Pool: Level 5 (billing)</button><button className={pool==="esi"?"on":""} onClick={()=>setPoolSafe("esi")}>Pool: ESI 1–2 (triage)</button></div>
-          <div className="seg">{winKeys.map(w=><button key={w} className={w===win?"on":""} onClick={()=>setWinRaw(w)}>{w}</button>)}</div>
-          <div className="seg"><button className={base==="repl"?"on":""} onClick={()=>setBase("repl")}>CCAR · vs pre-series</button><button className={base==="group"?"on":""} onClick={()=>setBase("group")}>CCAA · vs group avg</button><button className={base==="target"?"on":""} onClick={()=>setBase("target")}>vs 8% target</button></div>
+          <div className="seg" role="group" aria-label="Pool"><button aria-pressed={pool==="l5"} className={pool==="l5"?"on":""} onClick={()=>setPoolSafe("l5")}>Pool: Level 5 (billing)</button><button aria-pressed={pool==="esi"} className={pool==="esi"?"on":""} onClick={()=>setPoolSafe("esi")}>Pool: ESI 1–2 (triage)</button></div>
+          <div className="seg" role="group" aria-label="Window">{winKeys.map(w=><button key={w} aria-pressed={w===win} className={w===win?"on":""} onClick={()=>{setWinRaw(w);setWinNote("");}}>{w}</button>)}</div>
+          <div className="seg" role="group" aria-label="Baseline"><button aria-pressed={base==="repl"} className={base==="repl"?"on":""} onClick={()=>setBase("repl")}>CCAR · vs pre-series</button><button aria-pressed={base==="group"} className={base==="group"?"on":""} onClick={()=>setBase("group")}>CCAA · vs group avg</button><button aria-pressed={base==="target"} className={base==="target"?"on":""} onClick={()=>setBase("target")}>vs 8% target</button></div>
         </div>
       </div>
-      {pool==="esi" && <div style={{fontSize:11,color:"#facc15",marginBottom:10}}>ESI mode uses only months with a complete weekly sheet ({ms.map(CC_LABEL).join(", ")}). {Object.keys(ESI_PARTIAL).map(k=>`${CC_LABEL(k)} is entered ${ESI_PARTIAL[k]}`).join("; ")}.</div>}
-      <div style={{overflowX:"auto"}}><div style={{minWidth:780,display:"flex",flexDirection:"column",gap:8}}>
-        <div className="ccar-hdr"><span>#</span><span>Physician</span><span style={{textAlign:"right"}}>Cases · mix</span><span style={{textAlign:"right"}}>Raw CC%</span><span style={{textAlign:"right"}}>Conv · CC+</span><span>{statName}</span><span style={{textAlign:"right"}}>Raw rank</span></div>
+      {/* status strip: everything that defines the view, in one place */}
+      <div className="status-strip">
+        <span><b>Showing</b> {win} · {isEsi?"ESI 1–2 pool (triage)":"Level 5 pool (billing)"} · baseline {baseName}</span>
+        <span><b>Data</b> {complete}</span>
+        <span><b>Baseline applied by month</b> {curWin.map(m=>`${CC_LABEL(m)} ${ccPct(ccBase(g,m,base))}`).join(" · ")} — expected CC = pool × that month's rate, summed over the window{base==="repl"?" (4.5% raw × cases ÷ pool each month)":base==="target"?" (8% raw × cases ÷ pool each month)":""}</span>
+        {isEsi && <span style={{color:"#facc15"}}><b>ESI mode</b> CC counts come from billing and ESI counts from the weekly sheet; they are matched by month, not by encounter, so this is CC charts per 100 ESI 1–2 encounters, not a verified cohort rate. Only months with a complete weekly sheet are used ({ms.map(CC_LABEL).join(", ")}).</span>}
+        {winNote && <span style={{color:"#facc15"}}><b>Note</b> {winNote}</span>}
+      </div>
+      <div className="ccar-list">
+        <div className="ccar-hdr"><span>#</span><span>Physician</span><span className="r" title="billing cases in window; mix = ESI 4–5 share (triage) or Level 5 share (billing)">Cases · mix</span><span className="r" title="CC charts ÷ all cases">Raw CC%</span><span className="r" title={isEsi?"CC charts per 100 ESI 1–2 encounters · CC+ = indexed to group (100 = average)":"CC ÷ (CC + Level 5) · CC+ = indexed to group (100 = average)"}>{convLabel} · CC+</span><span title="actual CC − expected CC">{statName}</span><span className="r" title="rank by raw CC % in this window, and how far the adjustment moved it">Raw rank</span></div>
         {rows.map((r,i)=>{
           const {p,a}=r; const open=sel===p.name; const tags=ccReason(p,a,base,pool,firstWin,gconv); const rr=rawRank[p.name]; const shift=rr-(i+1);
           const plus = a.conv===null?null:Math.round(a.conv/gconv*100);
+          const xcc = a.cc - a.d;
           const mixLabel = a.e45s!==null ? `${Math.round(a.e45s*100)}% ESI 4–5` : `${Math.round(a.l5s*100)}% L5`;
           const mixWarn = a.e45s!==null ? a.e45s>=0.20 : a.l5s<0.45;
           return (
             <div key={p.name}>
-              <button className={"ccar-row"+(open?" sel":"")} onClick={()=>setSel(open?"":p.name)}>
-                <div style={{width:32,height:32,borderRadius:"50%",background:i===0?"linear-gradient(135deg,#f59e0b,#d97706)":i===1?"linear-gradient(135deg,#94a3b8,#64748b)":i===2?"linear-gradient(135deg,#b45309,#92400e)":"#1a2a3a",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:i<3?"#fff":"#475569"}}>{i+1}</div>
-                <div>
+              <button className={"ccar-row"+(open?" sel":"")} onClick={()=>setSel(open?"":p.name)} aria-expanded={open}>
+                <div className="c-rank"><div style={{width:32,height:32,borderRadius:"50%",background:i===0?"linear-gradient(135deg,#f59e0b,#d97706)":i===1?"linear-gradient(135deg,#94a3b8,#64748b)":i===2?"linear-gradient(135deg,#b45309,#92400e)":"#1a2a3a",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:i<3?"#fff":"#8a97ab"}}>{i+1}</div></div>
+                <div className="c-who">
                   <div style={{fontSize:14,fontWeight:600,color:"#e2e8f0",marginBottom:tags.length?6:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.name}</div>
                   <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{tags.map((t,k)=><CcPill key={k} c={t.c}>{t.t}</CcPill>)}</div>
                 </div>
-                <div style={{textAlign:"right",fontSize:12,color:"#94a3b8",fontFamily:"'DM Mono',monospace"}}>{a.cases}<div style={{fontSize:10,color:mixWarn?"#facc15":"#475569",whiteSpace:"nowrap"}}>{mixLabel}</div></div>
-                <div style={{textAlign:"right",fontSize:13,color:"#94a3b8",fontFamily:"'DM Mono',monospace"}}>{ccPct(a.raw)}</div>
-                <div style={{textAlign:"right",fontSize:13,color:"#e2e8f0",fontFamily:"'DM Mono',monospace"}}>{ccPct(a.conv)}<div style={{fontSize:10,color:plus>=100?"#4ade80":"#475569"}}>CC+ {plus}</div></div>
-                <div>
-                  <div style={{display:"flex",justifyContent:"space-between",fontSize:11,marginBottom:4}}>
-                    <span style={{color:"#475569"}}>{a.cc} CC on {a.pool} {pool==="esi"?"ESI 1–2":"high-acuity"}</span>
-                    <span style={{fontSize:15,fontWeight:700,color:a.d>=0?"#4ade80":"#f87171",fontFamily:"'DM Mono',monospace"}}>{ccSigned(a.d)}</span>
+                <div className="c-cases"><span className="mlabel">Cases · mix</span><span className="mono">{a.cases}</span><div style={{fontSize:10,color:mixWarn?"#facc15":"#8a97ab",whiteSpace:"nowrap"}}>{mixLabel}</div></div>
+                <div className="c-raw"><span className="mlabel">Raw CC%</span><span className="mono" style={{color:"#cbd5e1"}}>{ccPct(a.raw)}</span></div>
+                <div className="c-conv"><span className="mlabel">{convLabel}</span><span className="mono" style={{color:"#e2e8f0"}}>{fmtConv(a.conv)}</span><div style={{fontSize:10,color:plus>=100?"#4ade80":"#8a97ab"}}>CC+ {plus}</div></div>
+                <div className="c-bar">
+                  <div style={{display:"flex",justifyContent:"space-between",fontSize:11,marginBottom:4,gap:8}}>
+                    <span style={{color:"#8a97ab",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{a.cc} CC · pool {a.pool} · expected {xcc.toFixed(1)}</span>
+                    <span className="mono" style={{fontSize:15,fontWeight:700,color:a.d>=0?"#4ade80":"#f87171"}}>{ccSigned(a.d)}</span>
                   </div>
                   <CcDivBar v={a.d} max={maxAbs}/>
                 </div>
-                <div style={{textAlign:"right",fontSize:12,color:"#64748b",fontFamily:"'DM Mono',monospace"}}>#{rr}{shift!==0 && <span style={{color:shift>0?"#4ade80":"#f87171",marginLeft:4}}>{shift>0?"↑":"↓"}{Math.abs(shift)}</span>}</div>
+                <div className="c-rr"><span className="mlabel">Raw rank</span><span className="mono" style={{color:"#8a97ab"}}>#{rr}{shift!==0 && <span style={{color:shift>0?"#4ade80":"#f87171",marginLeft:4}}>{shift>0?"↑":"↓"}{Math.abs(shift)}</span>}</span></div>
               </button>
               {open && <CcDetail p={p} win={win} base={base} pool={pool} windows={windows}/>}
             </div>
           );
         })}
-      </div></div>
+      </div>
+      {hidden.length>0 && <div style={{fontSize:11,color:"#8a97ab",marginTop:10}}>Not ranked (under {MIN_CASES} cases in window or no pool): {hidden.map(r=>`${r.p.name.split(",")[0]} (${r.a.cases} cases, ${statName} ${ccSigned(r.a.d)})`).join(" · ")}.</div>}
       <div style={{marginTop:22,background:"#0a1520",border:"1px solid #1a2a3a",borderLeft:"3px solid #c8102e",borderRadius:12,padding:"16px 20px",fontSize:12,color:"#94a3b8",lineHeight:1.65}}>
         <div style={{fontSize:13,fontWeight:600,color:"#e2e8f0",marginBottom:6}}>How to read this</div>
-        <b style={{color:"#e2e8f0"}}>Conv</b> = CC ÷ pool: of the sick patients you saw, the share you converted to supported critical care. The pool is either <b style={{color:"#e2e8f0"}}>Level 5 + CC charts</b> (from billing; available every month) or <b style={{color:"#e2e8f0"}}>ESI 1–2 patients</b> (from triage; nurse-assigned, so not physician-controlled — the fairer denominator when the weekly sheet is complete). <b style={{color:"#e2e8f0"}}>CC+</b> is conversion indexed to the group (100 = average).
-        <b style={{color:"#e2e8f0"}}> CCAR</b> = CC − pool × baseline conversion — a count of charts, so volume matters. Three baselines: <b style={{color:"#e2e8f0"}}>CCAR</b> (pre-series 4.5% — sums to charts gained, the scoreboard), <b style={{color:"#e2e8f0"}}>CCAA</b> (group average — sums to zero, a ranking), and <b style={{color:"#e2e8f0"}}>vs 8% target</b> (sums to the gap, a to-do list).
-        <b style={{color:"#e2e8f0"}}> Mix</b> shows ESI 4–5 share when triage data exists (20%+ = PIT-heavy), otherwise Level 5 share (under 45% = PIT signature). <b style={{color:"#e2e8f0"}}>Raw rank</b> is where the old sort put you. Nocturnists see a different mix but convert at or above the day group; compare night docs to each other.
-        <div style={{marginTop:8,color:"#475569"}}>Sources: Vituity E&M Billing reports (physicians only) and the weekly "pts per hour" ESI sheet. {LABEL(PARTIAL_KEY)} billing is {CODED[PARTIAL_KEY]} coded as of {DATA_ASOF}. Methods: <i>CC Conversion Metric — Methods Note</i>. Not used for compensation, scheduling, or evaluation.</div>
+        <b style={{color:"#e2e8f0"}}>Conv</b> = CC ÷ pool: of the sick patients you saw, the share documented as critical care. The pool is either <b style={{color:"#e2e8f0"}}>Level 5 + CC charts</b> (billing; every month) or <b style={{color:"#e2e8f0"}}>ESI 1–2 encounters</b> (triage; nurse-assigned, so not physician-controlled, but counted separately from CC charts, so shown as CC per 100). <b style={{color:"#e2e8f0"}}>CC+</b> is conversion indexed to the group (100 = average): a rate stat.
+        <b style={{color:"#e2e8f0"}}> CCAR</b> = CC − pool × baseline rate, computed monthly and summed: a count of charts, so volume matters. A positive CCAR means above the historical group benchmark on your patients, not necessarily improvement from your own earlier months. Three baselines: <b style={{color:"#e2e8f0"}}>CCAR</b> (pre-series 4.5%; sums to charts above benchmark), <b style={{color:"#e2e8f0"}}>CCAA</b> (group average; sums to zero across all physicians, a comparison not a total), and <b style={{color:"#e2e8f0"}}>vs 8% target</b> (sums to the net group shortfall).
+        <b style={{color:"#e2e8f0"}}> Mix</b> shows ESI 4–5 share when triage data exists (20%+ = PIT-heavy), otherwise Level 5 share (under 45% = PIT signature). <b style={{color:"#e2e8f0"}}>Raw rank</b> is where the raw sort put you. This is a proxy-adjusted comparison, not an isolated measure of documentation. Nocturnists see a different mix; compare night physicians to each other.
+        <div style={{marginTop:8,color:"#8a97ab"}}>Sources: Vituity E&M Billing reports (physicians only) and the weekly pts-per-hour ESI sheet. {codedLabel(PARTIAL_KEY)} as of {DATA_ASOF}. Full definitions and worked examples: <b style={{color:"#cbd5e1"}}>Stat Guide</b> tab. Not used for compensation, scheduling, or evaluation.</div>
       </div>
     </div>
   );
@@ -493,13 +554,13 @@ function StatGuide(){
       { name:"ESI 4–5 share", tag:"the PIT meter", f:"ESI 4 + ESI 5 patients ÷ all patients (triage)",
         what:"From the weekly pts-per-hour sheet. Triage acuity is assigned by the nurse before you see the patient, so this is a clean read on how much of your month was provider-in-triage. 20% or more is PIT-heavy. Lehman and Urban run 1–4%; a PIT-heavy month for a day doc runs 25–30%.",
         ex:null },
-      { name:"High-acuity pool", tag:"the fair denominator", f:"CC + Level 5 charts  ·  or  ESI 1–2 patients",
-        what:"The patients who could plausibly have been critical care. Two versions: from billing, CC + Level 5 charts (the Vituity columns are mutually exclusive, so that's the full set of sick encounters); from triage, ESI 1–2 patients. The ESI version is the fairer one because the nurse assigns it, not the physician — but it needs the weekly sheet to be complete for the month. PIT patients essentially never land in either, which is what makes everything below immune to PIT.",
+      { name:"High-acuity pool", tag:"a fairer denominator", f:"CC + Level 5 charts  ·  or  ESI 1–2 patients",
+        what:"The patients who could plausibly have been critical care. Two versions: from billing, CC + Level 5 charts (the Vituity columns are mutually exclusive, so that's the full set of sick encounters); from triage, ESI 1–2 patients. The ESI version is the fairer one because the nurse assigns it, not the physician — but it needs the weekly sheet to be complete for the month. PIT patients rarely land in either, which is why PIT shifts dilute the numbers below far less than they dilute raw CC %. Other case-mix differences (nights, zone, EMS share) remain.",
         ex:<span>{exName}: <M>{ex[1]} + {ex[2]} = {pool}</M></span> },
     ]},
     { tier:"Rate stats", items:[
       { name:"CC conversion", tag:"the batting average that adjusts for the pitcher", f:"CC ÷ (CC + Level 5)",
-        what:"Of the sick patients you saw, the share you converted to a supported critical care chart. Same patients, same coders, same hospital as everyone else — so it compares documentation, not scheduling. The group converted "+ccPct(g.conv)+" in "+CC_LABEL(k)+"; hitting 8% raw on this mix takes "+ccPct(g.cstar)+".",
+        what:"Of the sick patients you saw, the share documented as a supported critical care chart. Because the denominator is sick patients rather than all patients, scheduling matters much less than it does for raw CC %. It is still a proxy-adjusted comparison, not an isolated measure of documentation. The group converted "+ccPct(g.conv)+" in "+CC_LABEL(k)+"; hitting 8% raw on this mix takes "+ccPct(g.cstar)+". In ESI mode the CC and ESI counts come from separate sources matched by month, so it reads as CC charts per 100 ESI 1–2 encounters.",
         ex:<span>{exName}: <M>{ex[1]} ÷ {pool} = {ccPct(conv)}</M></span> },
       { name:"CC+", tag:"like OPS+ or ERA+", f:"your conversion ÷ group conversion × 100",
         what:"Conversion indexed to the group, so 100 is average, 150 is 50% better than average, 50 is half. It makes a rate instantly legible without anyone needing to remember what a good conversion number is this month.",
@@ -510,10 +571,10 @@ function StatGuide(){
         what:"How many CC charts a baseline physician would have produced on your patients. The baseline is a choice (next three cards). Everything after this is just actual minus expected.",
         ex:<span>{exName} at group average: <M>{pool} × {ccPct(g.conv)} = {xcc.toFixed(1)}</M></span> },
       { name:"CCAA — above average", tag:"wins above average", f:"CC − pool × group conversion",
-        what:"Charts above or below what the group would have done with your patients. Volume-weighted, so a big month counts more. Sums to exactly zero across the group — it's a ranking of who's carrying and who's dragging, never a total.",
+        what:"Charts above or below what the group's own conversion rate would have produced on your patients. Volume-weighted, so a big month counts more. Sums to exactly zero across all physicians; the leaderboard shows only physicians with enough cases, so its visible total can differ slightly and the tile says by how much. A comparison against the group, never a total.",
         ex:<span>{exName}: <M>{ex[1]} − {xcc.toFixed(1)} = {ccSigned(ccaa)}</M></span> },
       { name:"CCAR — above replacement", tag:"the WAR version · the big number", f:"CC − pool × pre-series conversion",
-        what:"Replacement level is how the group documented before the email series: 4.5% raw, roughly 7% conversion on this mix. CCAR is the charts you produced beyond that. It sums to the project's total impact, and almost everyone is positive on it — it rewards the people who moved. This is the number on the leaderboard.",
+        what:"Replacement level is how the group documented before the email series: 4.5% raw (Nov '25–Mar '26), applied each month as 4.5% × cases ÷ pool, roughly 7% conversion on this mix. CCAR is your CC charts beyond that benchmark, computed monthly and summed. Positive means above the historical group benchmark on your patients; it does not by itself mean you improved from your own earlier months (the detail view shows that). The group total is charts above the pre-series benchmark, which is one input to judging the project, not proof of its effect. This is the number on the leaderboard.",
         ex:<span>{exName}: <M>{ex[1]} − {pool} × {ccPct(g.crepl)} = {ccSigned(ccar)}</M></span> },
       { name:"vs 8% target", tag:"the to-do list", f:"CC − pool × target conversion",
         what:"Same math with the baseline set to the conversion rate that would put the group at 8%. Sums to the group's gap to goal, so each physician's number is literally their share of the charts we're short.",
@@ -524,10 +585,10 @@ function StatGuide(){
         what:"One month of per-physician CC data is mostly noise under any metric — 10 charts either way is a lot of movement on 60 sick patients. Rankings use a 3-month rolling window (≥150 cases); the season view is the most trustworthy. Single-month numbers are shown for context, not ranked.",
         ex:null },
       { name:"Reason codes", tag:"the pills next to a name", f:"",
-        what:"PIT signature = Level 5 share under 45%; check the schedule before assuming it's documentation. Declining vs spring = conversion down 4+ points from Apr–Jun. Sick mix, low conversion = high Level 5 share and below-average conversion — the strongest coaching candidate. Improved = CCAR up 8+ charts vs the first window. Nights = a different Level 5 mix (more high-MDM admits), but the night group converts at or above the day group, so compare night docs to each other.",
+        what:"Every flag is a prompt for contextual chart review, not a conclusion about a clinician. PIT-heavy = ESI 4–5 share 20%+ (or Level 5 share under 45% when triage data is missing); check the schedule first. Review: down vs spring = conversion down by 40% or more of the group rate versus the first three months. Review: sick mix, low conversion = low-acuity share under 10% and conversion under 75% of group. CCAR +N vs window = the counting stat is up 8+ charts versus the first three-month window. Nights = a different mix (more high-MDM admits), but the night group converts at or above the day group, so compare night physicians to each other.",
         ex:null },
       { name:"Known limits", tag:"what it can't tell you", f:"",
-        what:"A Level 5 patient isn't always CC-eligible, and shift type changes the mix. The Level 5 pool is physician-controlled, so under-leveling 4s would flatter conversion — the ESI 1–2 pool fixes that when the weekly sheet is complete, and Level 5 share stays visible either way. Reliability versus raw CC % isn't proven yet at monthly sample sizes. And an internal baseline can't see group-wide under-documentation; the RCM downcode lists and the 8% target are the external check. None of this is used for compensation, scheduling, or evaluation.",
+        what:"A Level 5 patient isn't always CC-eligible, and shift type changes the mix. The Level 5 pool is physician-controlled, so under-leveling 4s would flatter conversion; the ESI 1–2 pool avoids that when the weekly sheet is complete, and Level 5 share stays visible either way. No uncertainty intervals are shown: with 60–150 sick patients in a window, a difference of a few charts is within normal month-to-month noise and should be read as a tie. Reliability versus raw CC % isn't proven yet at monthly sample sizes. An internal baseline can't see group-wide under-documentation; the RCM downcode lists and the 8% target are the external check. None of this is used for compensation, scheduling, or evaluation.",
         ex:null },
     ]},
   ];
@@ -535,17 +596,17 @@ function StatGuide(){
     <div>
       <div style={{marginBottom:20}}>
         <div style={{fontSize:16,fontWeight:600,color:"#e2e8f0",marginBottom:4}}>Stat Guide</div>
-        <div style={{fontSize:12,color:"#475569",maxWidth:720,lineHeight:1.5}}>Every number on the CCAR tab, with the formula and a worked example from {CC_LABEL(k)} '26. Same idea as the advanced stats page on a baseball site: separate what the physician controls from what the schedule handed them.</div>
+        <div style={{fontSize:12,color:"#8a97ab",maxWidth:720,lineHeight:1.5}}>Every number on the CCAR tab, with the formula and a worked example from {CC_LABEL(k)} '26. Same idea as the advanced stats page on a baseball site: separate what the physician controls from what the schedule handed them.</div>
       </div>
       {CARDS.map(t=>(
         <div key={t.tier} style={{marginBottom:24}}>
-          <div style={{fontSize:11,color:"#475569",letterSpacing:"1px",textTransform:"uppercase",marginBottom:10,paddingBottom:6,borderBottom:"1px solid #1a2a3a"}}>{t.tier}</div>
+          <div style={{fontSize:11,color:"#8a97ab",letterSpacing:"1px",textTransform:"uppercase",marginBottom:10,paddingBottom:6,borderBottom:"1px solid #1a2a3a"}}>{t.tier}</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:14}}>
             {t.items.map(c=>(
               <div key={c.name} style={{background:"#0a1520",border:"1px solid #1a2a3a",borderRadius:12,padding:"18px 20px",display:"flex",flexDirection:"column",gap:8}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:10,flexWrap:"wrap"}}>
                   <div style={{fontSize:15,fontWeight:700,color:"#f1f5f9"}}>{c.name}</div>
-                  <div style={{fontSize:11,color:"#475569",fontStyle:"italic"}}>{c.tag}</div>
+                  <div style={{fontSize:11,color:"#8a97ab",fontStyle:"italic"}}>{c.tag}</div>
                 </div>
                 {c.f && <F>{c.f}</F>}
                 <div style={{fontSize:12,color:"#94a3b8",lineHeight:1.65}}>{c.what}</div>
@@ -555,7 +616,7 @@ function StatGuide(){
           </div>
         </div>
       ))}
-      <div style={{fontSize:11,color:"#334155"}}>Full derivation and back-test: <i>CC Conversion Metric — Methods Note</i> and <i>CC Data Analysis Sept 2026</i> in the project folder.</div>
+      <div style={{fontSize:11,color:"#64748b"}}>Data completeness: provisional &lt;95% coded · near-final 95–98.9% · final ≥99%. Revenue figures elsewhere on the site are illustrative at ${REV_PER_CC} per CC chart ({REV_NOTE}). Full derivation and back-test are in the project's methods note; ask Casey for a copy.</div>
     </div>
   );
 }
@@ -565,23 +626,30 @@ function App() {
   const [filter, setFilter] = useState("all");
   const [sortBy, setSortBy] = useState(LATEST_FINAL);
   const [lbMonth, setLbMonth] = useState(LATEST_FINAL);
+  const [lbMode, setLbMode] = useState("rolling");   // rolling 3-month (default) | single month
   const [selDr,  setSelDr]  = useState("");
   const [floor,  setFloor]  = useState(5);
+  const [cfloor, setCfloor] = useState(10);   // conversion floor, % of Level 5 pool
 
   const groupData = MONTH_KEYS.map((k,i)=>({month:MONTHS[i],rate:GROUP_RATES[k],partial:k===PARTIAL_KEY}));
 
-  const leaderboard = [...PHYSICIANS]
-    .filter(p=>p[lbMonth]!==null&&p[lbMonth]!==undefined&&(p.cases[lbMonth]||0)>=20&&!p.lowVol)
-    .sort((a,b)=>b[lbMonth]-a[lbMonth]);
+  const lbKeys = lbMode==="rolling" ? MONTH_KEYS.slice(Math.max(0,MONTH_KEYS.indexOf(lbMonth)-2), MONTH_KEYS.indexOf(lbMonth)+1) : [lbMonth];
+  const LB_MIN = lbMode==="rolling" ? 150 : 60;
+  const leaderboard = PHYSICIANS.map(p=>{
+      let cases=0, cc=0; lbKeys.forEach(k=>{ if(p[k]!==null&&p[k]!==undefined&&p.cases[k]){ cases+=p.cases[k]; cc+=p[k]/100*p.cases[k]; } });
+      return { p, cases, cc:Math.round(cc), rate: cases? +(cc/cases*100).toFixed(1) : null };
+    }).filter(r=>r.rate!==null && r.cases>=LB_MIN && !r.p.lowVol).sort((a,b)=>b.rate-a.rate);
+  const lbLabel = lbMode==="rolling" ? `${LABEL(lbKeys[0])}–${LABEL(lbKeys[lbKeys.length-1])}` : LABEL(lbMonth);
 
-  const chartDrs = selDr
-    ? PHYSICIANS.filter(p=>p.name===selDr)
-    : PHYSICIANS.filter(p=>(p.cases[LATEST_FINAL]||0)>=30&&!p.lowVol);
+  const chartDrs = selDr==="__all"
+    ? PHYSICIANS.filter(p=>(p.cases[LATEST_FINAL]||0)>=30&&!p.lowVol)
+    : selDr ? PHYSICIANS.filter(p=>p.name===selDr) : [];
   const trendData = MONTH_KEYS.map((k,i)=>{
-    const obj={month:MONTHS[i],partial:k===PARTIAL_KEY};
+    const obj={month:MONTHS[i],partial:k===PARTIAL_KEY,__group:GROUP_RATES[k]};
     chartDrs.forEach(p=>{obj[p.name]=p[k];});
     return obj;
   });
+  const trendLines = [{key:"__group",label:"Group",color:"#94a3b8",bold:!selDr}].concat(chartDrs.map((p,i)=>({key:p.name,label:p.name.split(",")[0],color:selDr==="__all"?LINE_COLORS[i%LINE_COLORS.length]:"#c8102e",bold:selDr!=="__all"})));
 
   const tableRows=[...PHYSICIANS]
     .filter(p=>filter==="all"||getStatus(p)===filter)
@@ -602,6 +670,11 @@ function App() {
   const totGain=totProj-totActual;
   const newRate=SC_TOTAL>0?((totProj/SC_TOTAL)*100).toFixed(1):"—";
   const revGain=totGain*REV_PER_CC;
+  // conversion-floor scenario on the Level 5 pool, same month
+  const convScen = CC_COUNTS.map(p=>{ const v=p[SC_KEY]; if(!v) return null; const pool=v[1]+v[2]; const conv=pool?v[1]/pool:0; const proj=Math.max(v[1], Math.round(cfloor/100*pool)); return {name:p.name.split(",")[0], cases:v[0], pool, cc:v[1], conv, proj, gain:proj-v[1]}; }).filter(Boolean).sort((a,b)=>b.gain-a.gain);
+  const convGain = convScen.reduce((s,d)=>s+d.gain,0);
+  const convCC = convScen.reduce((s,d)=>s+d.cc,0); const convCases = convScen.reduce((s,d)=>s+d.cases,0);
+  const convNewRate = convCases? ((convCC+convGain)/convCases*100).toFixed(1) : "—";
   // overview stats, computed from data
   const latestCases=PHYSICIANS.reduce((s,p)=>s+(p.cases[PARTIAL_KEY]||0),0);
   const latestRate=GROUP_RATES[PARTIAL_KEY], finalRate=GROUP_RATES[LATEST_FINAL];
@@ -611,6 +684,7 @@ function App() {
   const dcCases=PHYSICIANS.reduce((s,p)=>s+(p.cases[DOWNCODE_KEY]||0),0);
   const dcCC=Math.round(GROUP_RATES[DOWNCODE_KEY]/100*dcCases);
   const ifSupported=((dcCC+AUG_DOWNCODES)/dcCases*100).toFixed(1);
+  const ifFixable=((dcCC+AUG_DOWNCODES_FIXABLE)/dcCases*100).toFixed(1);
 
   const TABS=[
     {id:"overview",   label:"Overview"},
@@ -628,46 +702,46 @@ function App() {
     <div style={{minHeight:"100vh",display:"flex",flexDirection:"column"}}>
 
       {/* Header */}
-      <div style={{background:"linear-gradient(180deg,#0d1a26,#080e14)",borderBottom:"1px solid #1a2a3a",padding:"18px 32px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+      <div className="hdr-pad" style={{background:"linear-gradient(180deg,#0d1a26,#080e14)",borderBottom:"1px solid #1a2a3a",padding:"18px 32px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
         <div style={{display:"flex",alignItems:"center",gap:14}}>
           <div style={{width:40,height:40,background:"linear-gradient(135deg,#c8102e,#7b0019)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,boxShadow:"0 0 20px rgba(200,16,46,.3)"}}>⚕</div>
           <div>
             <div style={{fontSize:18,fontWeight:700,color:"#f1f5f9",letterSpacing:"-0.3px"}}>CritCareIQ</div>
-            <div style={{fontSize:11,color:"#475569",letterSpacing:"0.5px"}}>MERCY FITZGERALD · O52 · PHYSICIAN CC RATES ONLY</div>
+            <div style={{fontSize:11,color:"#8a97ab",letterSpacing:"0.5px"}}>MERCY FITZGERALD · O52 · PHYSICIAN CC RATES ONLY</div>
           </div>
         </div>
-        <div style={{display:"flex",gap:10}}>
-          <span style={{background:"#0d1f0d",border:"1px solid #1a4a1a",borderRadius:6,padding:"5px 12px",fontSize:11,color:"#4ade80",letterSpacing:"1px"}}>NOV 2025 – SEP 2026</span>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          <span style={{background:"#0d1f0d",border:"1px solid #1a4a1a",borderRadius:6,padding:"5px 12px",fontSize:11,color:"#4ade80",letterSpacing:"1px",whiteSpace:"nowrap"}}>NOV 2025 – SEP 2026</span>
           <span style={{background:"#1a0d0d",border:"1px solid #4a1a1a",borderRadius:6,padding:"5px 12px",fontSize:11,color:"#f87171",letterSpacing:"1px"}}>TARGET: 8–10%</span>
         </div>
       </div>
 
       {/* Nav */}
-      <div style={{display:"flex",borderBottom:"1px solid #1a2a3a",background:"#0a1520",padding:"0 32px",overflowX:"auto"}}>
+      <div className="nav-pad" role="tablist" style={{display:"flex",borderBottom:"1px solid #1a2a3a",background:"#0a1520",padding:"0 32px",overflowX:"auto"}}>
         {TABS.map(t=>(
-          <button key={t.id} className="tab-btn" onClick={()=>setTab(t.id)}
+          <button key={t.id} className="tab-btn" role="tab" aria-selected={tab===t.id} onClick={()=>setTab(t.id)}
             style={{padding:"13px 18px",fontSize:13,fontWeight:500,whiteSpace:"nowrap",
-              color:tab===t.id?"#e2e8f0":"#475569",
+              color:tab===t.id?"#e2e8f0":"#8a97ab",
               borderBottom:tab===t.id?"2px solid #c8102e":"2px solid transparent",marginBottom:-1}}>
             {t.label}
           </button>
         ))}
       </div>
 
-      <div style={{padding:"28px 32px",maxWidth:1300,margin:"0 auto",width:"100%",flex:1}}>
+      <div className="page-pad" style={{padding:"28px 32px",maxWidth:1300,margin:"0 auto",width:"100%",flex:1}}>
 
         {/* OVERVIEW */}
         {tab==="overview"&&(
           <div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16,marginBottom:24}}>
+            <div className="grid4" style={{marginBottom:24}}>
               {[
-                {label:`${LABEL(PARTIAL_KEY)} Physician CC Rate`,value:`${latestRate}%*`,sub:`${CODED[PARTIAL_KEY]} coded · ${LABEL(LATEST_FINAL)} final ${finalRate}% · peak ${peak[1]}% ${LABEL(peak[0])}`,color:latestRate>=BENCHMARK?"#4ade80":latestRate>=5?"#facc15":"#f87171",bg:"#1a1a08",border:"#3a3a10"},
-                {label:"National EM Benchmark",value:"8–10%",sub:`Gap: ${(BENCHMARK-latestRate).toFixed(1)}pts · ~${gapCharts} more CC charts/mo to reach 8%`,color:"#facc15",bg:"#1a1a08",border:"#3a3a10"},
-                {label:"Est. Missed Rev / Month",value:`~$${(missedMo/1000).toFixed(1)}K`,sub:`vs. 8% benchmark on ${latestCases.toLocaleString()} ${LABEL(PARTIAL_KEY)} visits`,color:"#f87171",bg:"#1a0808",border:"#3a1010"},
-                {label:"Annualized Opportunity",value:`~$${Math.round(missedMo*12/1000)}K`,sub:`@ $${REV_PER_CC}/encounter (Medicare blended)`,color:"#60a5fa",bg:"#08101a",border:"#10203a"},
+                {label:`${LABEL(PARTIAL_KEY)} Physician CC Rate`,value:`${latestRate}%*`,sub:`${codedStatus(PARTIAL_KEY)}, ${CODED[PARTIAL_KEY]} coded · ${codedLabel(LATEST_FINAL)} ${finalRate}% · peak ${peak[1]}% ${LABEL(peak[0])}`,color:latestRate>=BENCHMARK?"#4ade80":latestRate>=5?"#facc15":"#f87171",bg:"#1a1a08",border:"#3a3a10"},
+                {label:"Operational Target",value:"8–10%",sub:`Project target. Gap: ${(BENCHMARK-latestRate).toFixed(1)} pts · ~${gapCharts} more CC charts/mo to reach 8% (net group shortfall)`,color:"#facc15",bg:"#1a1a08",border:"#3a3a10"},
+                {label:"Illustrative Rev. Opportunity / Mo",value:`~$${(missedMo/1000).toFixed(1)}K`,sub:`at the 8% target on ${latestCases.toLocaleString()} ${LABEL(PARTIAL_KEY)} visits · $${REV_PER_CC}/CC chart (${REV_NOTE})`,color:"#f87171",bg:"#1a0808",border:"#3a1010"},
+                {label:"Illustrative Annual Run Rate",value:`~$${Math.round(missedMo*12/1000)}K`,sub:`12 × the monthly figure · based on ${codedStatus(PARTIAL_KEY)} data · not a forecast`,color:"#60a5fa",bg:"#08101a",border:"#10203a"},
               ].map((c,i)=>(
                 <div key={i} style={{background:c.bg,border:`1px solid ${c.border}`,borderRadius:12,padding:20}}>
-                  <div style={{fontSize:11,color:"#475569",letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>{c.label}</div>
+                  <div style={{fontSize:11,color:"#8a97ab",letterSpacing:"1px",textTransform:"uppercase",marginBottom:8}}>{c.label}</div>
                   <div style={{fontSize:28,fontWeight:700,color:c.color,letterSpacing:"-1px",marginBottom:4}}>{c.value}</div>
                   <div style={{fontSize:12,color:"#64748b"}}>{c.sub}</div>
                 </div>
@@ -678,28 +752,29 @@ function App() {
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
                 <div>
                   <div style={{fontSize:14,fontWeight:600,color:"#e2e8f0"}}>Physician CC Rate — Group Trend</div>
-                  <div style={{fontSize:12,color:"#475569",marginTop:2}}>Volume Group – Physicians row only · APPs excluded</div>
+                  <div style={{fontSize:12,color:"#8a97ab",marginTop:2}}>Volume Group – Physicians row only · APPs excluded</div>
                 </div>
                 <span style={{background:"#0d1a0d",border:"1px solid #1a3a1a",borderRadius:6,padding:"4px 12px",fontSize:11,color:"#4ade80",whiteSpace:"nowrap"}}>★ Email series launched late Mar '26</span>
               </div>
               <SvgChart data={groupData} lines={[{key:"rate",label:"Physician CC%",color:"#c8102e",bold:true}]} yMax={12} height={220}/>
-              <div style={{display:"flex",gap:20,marginTop:8,fontSize:11,color:"#475569",flexWrap:"wrap"}}>
+              <div style={{display:"flex",gap:20,marginTop:8,fontSize:11,color:"#8a97ab",flexWrap:"wrap"}}>
                 <span>● Red = physician CC rate</span>
                 <span style={{color:"#facc15"}}>◉ Yellow = 8% benchmark line</span>
-                <span style={{color:"#4ade80"}}>{LABEL(LATEST_FINAL)} final · {LABEL(PARTIAL_KEY)} {CODED[PARTIAL_KEY]} coded as of {DATA_ASOF}</span>
+                <span style={{color:"#4ade80"}}>{codedLabel(LATEST_FINAL)} · {codedLabel(PARTIAL_KEY)} as of {DATA_ASOF}</span>
               </div>
             </div>
 
             {/* RCM coding feedback callout */}
-            <div style={{background:"#0a1520",border:"1px solid #3a1010",borderLeft:"3px solid #c8102e",borderRadius:12,padding:"18px 24px",marginBottom:24,display:"grid",gridTemplateColumns:"auto 1fr",gap:24,alignItems:"center"}}>
+            <div style={{background:"#0a1520",border:"1px solid #3a1010",borderLeft:"3px solid #c8102e",borderRadius:12,padding:"18px 24px",marginBottom:24,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:24,alignItems:"center"}}>
               <div style={{textAlign:"center",minWidth:110}}>
                 <div style={{fontSize:34,fontWeight:700,color:"#f87171",fontFamily:"'DM Mono',monospace",lineHeight:1}}>{AUG_DOWNCODES}</div>
-                <div style={{fontSize:10,color:"#475569",letterSpacing:"1px",textTransform:"uppercase",marginTop:6}}>{LABEL(DOWNCODE_KEY).split(" ")[0]} CC statements<br/>downcoded to 99285</div>
+                <div style={{fontSize:10,color:"#8a97ab",letterSpacing:"1px",textTransform:"uppercase",marginTop:6}}>{LABEL(DOWNCODE_KEY).split(" ")[0]} CC statements<br/>downcoded to 99285</div>
+                <div style={{fontSize:11,color:"#94a3b8",marginTop:8,lineHeight:1.4}}>~{AUG_DOWNCODES_FIXABLE} documentation gap<br/>~{AUG_DOWNCODES-AUG_DOWNCODES_FIXABLE} not critical care</div>
               </div>
               <div>
                 <div style={{fontSize:13,fontWeight:600,color:"#e2e8f0",marginBottom:6}}>RCM coding feedback — {LABEL(DOWNCODE_KEY)}: the note didn't support the time statement</div>
                 <div style={{fontSize:12,color:"#94a3b8",lineHeight:1.6}}>
-                  Had all {AUG_DOWNCODES} held up, {LABEL(DOWNCODE_KEY)} would be <span style={{color:"#facc15",fontFamily:"'DM Mono',monospace"}}>{ifSupported}%</span> — flat with prior months instead of a dip.
+                  RCM review judged roughly {AUG_DOWNCODES_FIXABLE} of the {AUG_DOWNCODES} to be critical care that lost 99291 on documentation; the other ~{AUG_DOWNCODES-AUG_DOWNCODES_FIXABLE} were observation-only visits that did not qualify. Had the ~{AUG_DOWNCODES_FIXABLE} documentation cases held, {LABEL(DOWNCODE_KEY)} would be about <span style={{color:"#facc15",fontFamily:"'DM Mono',monospace"}}>{ifFixable}%</span> (all {AUG_DOWNCODES}: {ifSupported}%). Only the documentation cases represent recoverable work going forward.
                   Three patterns: <span style={{color:"#e2e8f0"}}>intervention written as a plan, not as done</span> ("Plan: IVF" — no dose, route, or response) ·
                   <span style={{color:"#e2e8f0"}}> critical illness in the CC statement but not in the final diagnosis</span> ("shock" vs. "hypotension") ·
                   <span style={{color:"#e2e8f0"}}> observation-only visits with a CC statement</span> (intoxication, OD protecting airway) — these weren't critical care.
@@ -707,14 +782,14 @@ function App() {
               </div>
             </div>
 
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16}}>
+            <div className="grid3">
               {["strong","watch","needs"].map(s=>{
                 const cfg=STATUS_CFG[s];
                 const docs=PHYSICIANS.filter(p=>getStatus(p)===s&&!p.lowVol);
                 return(
                   <div key={s} style={{background:cfg.bg,border:`1px solid ${cfg.border}`,borderRadius:12,padding:20}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-                      <div style={{fontSize:13,fontWeight:600,color:cfg.text}}>{cfg.label}</div>
+                      <div><div style={{fontSize:13,fontWeight:600,color:cfg.text}}>{cfg.label}</div><div style={{fontSize:10,color:"#64748b"}}>avg raw CC % {LABEL(STATUS_KEYS[0]).split(" ")[0]}–{LABEL(STATUS_KEYS[2]).split(" ")[0]}</div></div>
                       <span style={{background:cfg.border,borderRadius:20,padding:"2px 10px",fontSize:12,color:cfg.text,fontWeight:600}}>{docs.length}</span>
                     </div>
                     {docs.map(p=>{
@@ -741,37 +816,40 @@ function App() {
           <div>
             <div style={{marginBottom:20,display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:12}}>
               <div>
-                <div style={{fontSize:16,fontWeight:600,color:"#e2e8f0",marginBottom:4}}>{LABEL(lbMonth)} Physician Leaderboard{lbMonth===PARTIAL_KEY?" (partial)":""}</div>
-                <div style={{fontSize:12,color:"#475569"}}>Ranked by CC% · ≥20 cases · Benchmark: 8–10% · Low-volume excluded{CODED[lbMonth]?` · ${CODED[lbMonth]} of charts coded`:""}</div>
+                <div style={{fontSize:16,fontWeight:600,color:"#e2e8f0",marginBottom:4}}>{lbLabel} Physician Leaderboard{lbKeys.includes(PARTIAL_KEY)?" (includes provisional month)":""}</div>
+                <div style={{fontSize:12,color:"#8a97ab"}}>Ranked by raw CC % · ≥{LB_MIN} cases · target 8–10% · {lbMode==="rolling"?"three months pooled, which smooths single-month noise":"single month: rates on fewer than ~100 cases move by several points on noise alone"}{lbKeys.map(k=>CODED[k]?` · ${codedLabel(k)}`:"").join("")}</div>
               </div>
-              <select value={lbMonth} onChange={e=>setLbMonth(e.target.value)}>
-                {MONTH_KEYS.slice().reverse().map(k=><option key={k} value={k}>{MONTHS[MONTH_KEYS.indexOf(k)]}</option>)}
-              </select>
+              <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+                <div className="seg" role="group" aria-label="Period"><button aria-pressed={lbMode==="rolling"} className={lbMode==="rolling"?"on":""} onClick={()=>setLbMode("rolling")}>3-month rolling</button><button aria-pressed={lbMode==="single"} className={lbMode==="single"?"on":""} onClick={()=>setLbMode("single")}>Single month</button></div>
+                <select value={lbMonth} onChange={e=>setLbMonth(e.target.value)} aria-label="Ending month">
+                  {MONTH_KEYS.slice().reverse().map(k=><option key={k} value={k}>{MONTHS[MONTH_KEYS.indexOf(k)]}{lbMode==="rolling"?" (end)":""}</option>)}
+                </select>
+              </div>
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {leaderboard.map((p,i)=>{
-                const pct=p[lbMonth];
+              {leaderboard.map((r,i)=>{
+                const p=r.p; const pct=r.rate;
                 const barW=Math.min((pct/14)*100,100);
                 const bc=pct>=BENCHMARK?"#4ade80":pct>=5?"#facc15":"#f87171";
                 return(
                   <div key={p.name} style={{background:"#0a1520",border:`1px solid ${pct>=BENCHMARK?"#1a4a1a":"#1a2a3a"}`,borderRadius:10,padding:"16px 20px",display:"flex",alignItems:"center",gap:16}}>
                     <div style={{width:32,height:32,borderRadius:"50%",flexShrink:0,
                       background:i===0?"linear-gradient(135deg,#f59e0b,#d97706)":i===1?"linear-gradient(135deg,#94a3b8,#64748b)":i===2?"linear-gradient(135deg,#b45309,#92400e)":"#1a2a3a",
-                      display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:i<3?"#fff":"#475569"}}>
+                      display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:i<3?"#fff":"#8a97ab"}}>
                       {i+1}
                     </div>
                     <div style={{flex:1}}>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
                         <div style={{fontSize:14,fontWeight:600,color:"#e2e8f0"}}>{p.name}</div>
                         <div style={{display:"flex",alignItems:"center",gap:10}}>
-                          <span style={{fontSize:11,color:"#475569"}}>{p.cases[lbMonth]} cases</span>
+                          <span style={{fontSize:11,color:"#8a97ab"}}>{r.cc} CC on {r.cases} cases</span>
                           <span style={{fontSize:20,fontWeight:700,color:bc,fontFamily:"'DM Mono',monospace"}}>{pct}%</span>
                         </div>
                       </div>
                       <div style={{background:"#131e2a",borderRadius:4,height:8,overflow:"hidden"}}>
                         <div style={{width:`${barW}%`,height:"100%",background:`linear-gradient(90deg,${bc}88,${bc})`,borderRadius:4}}/>
                       </div>
-                      <div style={{display:"flex",justifyContent:"flex-end",marginTop:4,fontSize:10,color:pct>=BENCHMARK?"#4ade80":"#475569"}}>
+                      <div style={{display:"flex",justifyContent:"flex-end",marginTop:4,fontSize:10,color:pct>=BENCHMARK?"#4ade80":"#8a97ab"}}>
                         {pct>=BENCHMARK?"✓ At benchmark":`${(BENCHMARK-pct).toFixed(1)}% below target`}
                       </div>
                     </div>
@@ -794,21 +872,22 @@ function App() {
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16,flexWrap:"wrap",gap:12}}>
               <div>
                 <div style={{fontSize:14,fontWeight:600,color:"#e2e8f0"}}>Individual Physician Trends</div>
-                <div style={{fontSize:12,color:"#475569",marginTop:2}}>Default: ≥30 {LABEL(LATEST_FINAL)} cases · Yellow dashed = 8% target</div>
+                <div style={{fontSize:12,color:"#8a97ab",marginTop:2}}>Pick a physician to compare against the group line · Yellow dashed = 8% target · every value is in the Full Data Table</div>
               </div>
               <select value={selDr} onChange={e=>setSelDr(e.target.value)}>
-                <option value="">All (≥30 cases)</option>
+                <option value="">Group only</option>
+                <option value="__all">All physicians (≥30 cases)</option>
                 {PHYSICIANS.map(p=><option key={p.name} value={p.name}>{p.name}</option>)}
               </select>
             </div>
             <div style={{background:"#0a1520",border:"1px solid #1a2a3a",borderRadius:12,padding:24}}>
               <SvgChart
                 data={trendData}
-                lines={chartDrs.map((p,i)=>({key:p.name,label:p.name.split(",")[0],color:LINE_COLORS[i%LINE_COLORS.length],bold:selDr===p.name}))}
-                yMax={24} height={380}
+                lines={trendLines}
+                yMax={selDr==="__all"?24:16} height={selDr==="__all"?380:300}
               />
             </div>
-            {!selDr&&(
+            {selDr==="__all"&&(
               <div style={{marginTop:12,display:"flex",flexWrap:"wrap",gap:"8px 16px"}}>
                 {chartDrs.map((p,i)=>(
                   <span key={p.name} onClick={()=>setSelDr(p.name)}
@@ -818,8 +897,8 @@ function App() {
                 ))}
               </div>
             )}
-            {selDr&&<button onClick={()=>setSelDr("")} style={{marginTop:12,background:"transparent",border:"1px solid #2a3a4a",borderRadius:6,padding:"6px 14px",color:"#475569",fontSize:12,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>← Show all</button>}
-            <div style={{marginTop:10,fontSize:11,color:"#334155"}}>{LABEL(LATEST_FINAL)} final · {LABEL(PARTIAL_KEY)} {CODED[PARTIAL_KEY]} coded as of {DATA_ASOF} — may rise slightly as late charts bill.</div>
+            {selDr&&<button onClick={()=>setSelDr("")} style={{marginTop:12,background:"transparent",border:"1px solid #2a3a4a",borderRadius:6,padding:"8px 14px",color:"#8a97ab",fontSize:12,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>← Group only</button>}
+            <div style={{marginTop:10,fontSize:11,color:"#64748b"}}>{codedLabel(LATEST_FINAL)} · {codedLabel(PARTIAL_KEY)} as of {DATA_ASOF}. Provisional and near-final figures will change as remaining charts are coded, in either direction.</div>
           </div>
         )}
 
@@ -828,31 +907,31 @@ function App() {
           <div>
             <div style={{marginBottom:20}}>
               <div style={{fontSize:16,fontWeight:600,color:"#e2e8f0",marginBottom:4}}>Floor Rate Scenario Calculator</div>
-              <div style={{fontSize:12,color:"#475569"}}>{`Set a minimum CC% floor — see group rate and revenue impact if no physician bills below it. Based on ${LABEL(SC_KEY)} volumes (last final month).`}</div>
+              <div style={{fontSize:12,color:"#8a97ab"}}>{`Set a minimum CC% floor — see group rate and revenue impact if no physician bills below it. Based on ${LABEL(SC_KEY)} volumes (last final month).`}</div>
             </div>
             <div style={{background:"#0a1520",border:"1px solid #1a2a3a",borderRadius:12,padding:24,marginBottom:20}}>
               <div style={{display:"flex",alignItems:"center",gap:24,marginBottom:20}}>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:12,color:"#475569",marginBottom:8}}>Minimum physician CC% floor</div>
+                  <div style={{fontSize:12,color:"#8a97ab",marginBottom:8}}>Minimum physician CC% floor</div>
                   <input type="range" min={0} max={10} step={0.5} value={floor} onChange={e=>setFloor(parseFloat(e.target.value))}/>
-                  <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#334155",marginTop:4}}>
+                  <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#64748b",marginTop:4}}>
                     <span>0%</span><span>5%</span><span>8% (benchmark)</span><span>10%</span>
                   </div>
                 </div>
                 <div style={{textAlign:"center",minWidth:80}}>
                   <div style={{fontSize:36,fontWeight:700,color:"#c8102e",fontFamily:"'DM Mono',monospace"}}>{floor}%</div>
-                  <div style={{fontSize:11,color:"#475569"}}>floor</div>
+                  <div style={{fontSize:11,color:"#8a97ab"}}>floor</div>
                 </div>
               </div>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12}}>
+              <div className="grid4" style={{gap:12}}>
                 {[
                   {label:"Current Group Rate",value:`${GROUP_RATES[SC_KEY]}%`,color:"#94a3b8"},
                   {label:"Projected Group Rate",value:`${newRate}%`,color:"#4ade80"},
                   {label:"Additional CC Bills",value:`+${totGain}`,color:"#facc15"},
-                  {label:"Monthly Revenue Gain",value:`+$${revGain.toLocaleString()}`,color:"#60a5fa"},
+                  {label:"Illustrative Revenue Gain / Mo",value:`+$${revGain.toLocaleString()}`,color:"#60a5fa"},
                 ].map((c,i)=>(
                   <div key={i} style={{background:"#0f1923",borderRadius:8,padding:16,textAlign:"center"}}>
-                    <div style={{fontSize:10,color:"#475569",letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>{c.label}</div>
+                    <div style={{fontSize:10,color:"#8a97ab",letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>{c.label}</div>
                     <div style={{fontSize:22,fontWeight:700,color:c.color,fontFamily:"'DM Mono',monospace"}}>{c.value}</div>
                   </div>
                 ))}
@@ -864,7 +943,7 @@ function App() {
                 <thead>
                   <tr style={{borderBottom:"1px solid #1a2a3a"}}>
                     {["Physician",`${LABEL(SC_KEY).split(" ")[0]} Cases`,"Actual %","Floored %","Actual CC","Projected CC","Gain"].map(h=>(
-                      <th key={h} style={{textAlign:"left",padding:"8px 12px",fontSize:11,color:"#475569",fontWeight:500,whiteSpace:"nowrap"}}>{h}</th>
+                      <th key={h} style={{textAlign:"left",padding:"8px 12px",fontSize:11,color:"#8a97ab",fontWeight:500,whiteSpace:"nowrap"}}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -883,7 +962,52 @@ function App() {
                 </tbody>
               </table>
             </div>
-            <div style={{marginTop:10,fontSize:11,color:"#334155"}}>Revenue @ ${REV_PER_CC}/encounter (Medicare blended). For QI/leadership use only.</div>
+            <div style={{marginTop:10,fontSize:11,color:"#64748b"}}>Illustrative only: assumes every added chart would qualify as critical care, which is not established. Revenue @ ${REV_PER_CC}/CC chart ({REV_NOTE}). For QI/leadership use only.</div>
+
+            <div style={{marginTop:28,marginBottom:16}}>
+              <div style={{fontSize:16,fontWeight:600,color:"#e2e8f0",marginBottom:4}}>Conversion Floor Scenario (mix-adjusted)</div>
+              <div style={{fontSize:12,color:"#8a97ab"}}>{`Same idea on the Level 5 pool: if no physician converted fewer than X% of their high-acuity charts (CC + Level 5) to critical care. Based on ${LABEL(SC_KEY)}. Group converted ${(ccGroup("l5")[SC_KEY].conv*100).toFixed(1)}%; 8% raw needs ${(ccGroup("l5")[SC_KEY].cstar*100).toFixed(1)}%.`}</div>
+            </div>
+            <div style={{background:"#0a1520",border:"1px solid #1a2a3a",borderRadius:12,padding:24}}>
+              <div style={{display:"flex",alignItems:"center",gap:24,marginBottom:20,flexWrap:"wrap"}}>
+                <div style={{flex:1,minWidth:220}}>
+                  <div style={{fontSize:12,color:"#8a97ab",marginBottom:8}}>Minimum CC conversion of the Level 5 pool</div>
+                  <input id="cfloor" type="range" min={0} max={20} step={0.5} value={cfloor} onChange={e=>setCfloor(parseFloat(e.target.value))} aria-label="conversion floor"/>
+                  <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#64748b",marginTop:4}}><span>0%</span><span>10%</span><span>20%</span></div>
+                </div>
+                <div style={{textAlign:"center",minWidth:80}}>
+                  <div style={{fontSize:36,fontWeight:700,color:"#c8102e",fontFamily:"'DM Mono',monospace"}}>{cfloor}%</div>
+                  <div style={{fontSize:11,color:"#8a97ab"}}>floor</div>
+                </div>
+              </div>
+              <div className="grid4" style={{gap:12}}>
+                {[
+                  {label:"Current Group Rate",value:`${GROUP_RATES[SC_KEY]}%`,color:"#94a3b8"},
+                  {label:"Projected Group Rate",value:`${convNewRate}%`,color:"#4ade80"},
+                  {label:"Additional CC Charts",value:`+${convGain}`,color:"#facc15"},
+                  {label:"Illustrative Revenue Gain / Mo",value:`+$${(convGain*REV_PER_CC).toLocaleString()}`,color:"#60a5fa"},
+                ].map((c,i)=>(
+                  <div key={i} style={{background:"#0f1923",borderRadius:8,padding:16,textAlign:"center"}}>
+                    <div style={{fontSize:10,color:"#8a97ab",letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>{c.label}</div>
+                    <div style={{fontSize:22,fontWeight:700,color:c.color,fontFamily:"'DM Mono',monospace"}}>{c.value}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{overflowX:"auto",marginTop:16}}><table>
+                <thead><tr style={{borderBottom:"1px solid #1a2a3a"}}>{["Physician","Cases","Pool","Actual CC","Conv","Projected CC","Gain"].map(h=><th key={h} style={{textAlign:"left",padding:"8px 12px",fontSize:11,color:"#8a97ab",fontWeight:500,whiteSpace:"nowrap"}}>{h}</th>)}</tr></thead>
+                <tbody>{convScen.map((d,i)=>(
+                  <tr key={d.name} style={{borderBottom:"1px solid #0f1923",background:i%2===0?"#0a1218":"#080e14"}}>
+                    <td style={{padding:"9px 12px",fontSize:13,color:"#e2e8f0",fontWeight:500}}>{d.name}</td>
+                    <td className="mono" style={{padding:"9px 12px",fontSize:12,color:"#8a97ab"}}>{d.cases}</td>
+                    <td className="mono" style={{padding:"9px 12px",fontSize:12,color:"#8a97ab"}}>{d.pool}</td>
+                    <td className="mono" style={{padding:"9px 12px",fontSize:12,color:"#8a97ab"}}>{d.cc}</td>
+                    <td className="mono" style={{padding:"9px 12px",fontSize:12,color:d.conv*100>=cfloor?"#4ade80":"#f87171"}}>{(d.conv*100).toFixed(1)}%</td>
+                    <td className="mono" style={{padding:"9px 12px",fontSize:12,color:"#e2e8f0"}}>{d.proj}</td>
+                    <td className="mono" style={{padding:"9px 12px",fontSize:13,fontWeight:600,color:d.gain>0?"#4ade80":"#8a97ab"}}>{d.gain>0?`+${d.gain}`:"—"}</td>
+                  </tr>))}</tbody>
+              </table></div>
+              <div style={{marginTop:10,fontSize:11,color:"#64748b"}}>Illustrative only. Neither scenario establishes that any additional encounter would qualify as critical care; they size what the gap would be worth if it did.</div>
+            </div>
           </div>
         )}
 
@@ -893,9 +1017,9 @@ function App() {
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16,flexWrap:"wrap",gap:12}}>
               <div style={{fontSize:14,fontWeight:600,color:"#e2e8f0"}}>All Physicians · All Months · Click month to sort</div>
               <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                {[{id:"all",label:"All"},{id:"strong",label:"Strong"},{id:"watch",label:"Developing"},{id:"needs",label:"Needs Attn"}].map(f=>(
+                {[{id:"all",label:"All"},{id:"strong",label:"Raw ≥8%"},{id:"watch",label:"Raw 5–8%"},{id:"needs",label:"Raw <5%"}].map(f=>(
                   <button key={f.id} className="filter-btn" onClick={()=>setFilter(f.id)}
-                    style={{background:filter===f.id?"#1a2a3a":"transparent",border:`1px solid ${filter===f.id?"#4a6a8a":"#2a3a4a"}`,color:filter===f.id?"#e2e8f0":"#475569"}}>
+                    style={{background:filter===f.id?"#1a2a3a":"transparent",border:`1px solid ${filter===f.id?"#4a6a8a":"#2a3a4a"}`,color:filter===f.id?"#e2e8f0":"#8a97ab"}}>
                     {f.label}
                   </button>
                 ))}
@@ -905,16 +1029,16 @@ function App() {
               <table>
                 <thead>
                   <tr style={{borderBottom:"1px solid #1a2a3a"}}>
-                    <th style={{textAlign:"left",padding:"10px 12px",color:"#475569",fontWeight:500,fontSize:12,whiteSpace:"nowrap"}}>Physician</th>
-                    <th style={{textAlign:"center",padding:"10px 8px",color:"#475569",fontWeight:500,fontSize:12}}>Status</th>
+                    <th style={{textAlign:"left",padding:"10px 12px",color:"#8a97ab",fontWeight:500,fontSize:12,whiteSpace:"nowrap"}}>Physician</th>
+                    <th style={{textAlign:"center",padding:"10px 8px",color:"#8a97ab",fontWeight:500,fontSize:12}}>Status</th>
                     {MONTHS.map((m,i)=>(
                       <th key={m} onClick={()=>setSortBy(MONTH_KEYS[i])}
-                        style={{textAlign:"center",padding:"10px 8px",color:sortBy===MONTH_KEYS[i]?"#e2e8f0":MONTH_KEYS[i]===PARTIAL_KEY?"#facc15":"#475569",fontWeight:500,cursor:"pointer",whiteSpace:"nowrap",fontSize:12,userSelect:"none"}}>
+                        style={{textAlign:"center",padding:"10px 8px",color:sortBy===MONTH_KEYS[i]?"#e2e8f0":MONTH_KEYS[i]===PARTIAL_KEY?"#facc15":"#8a97ab",fontWeight:500,cursor:"pointer",whiteSpace:"nowrap",fontSize:12,userSelect:"none"}}>
                         {m}{sortBy===MONTH_KEYS[i]?" ▼":""}
                       </th>
                     ))}
-                    <th style={{textAlign:"center",padding:"10px 8px",color:"#475569",fontWeight:500,fontSize:12}}>3-Mo Avg</th>
-                    <th style={{textAlign:"center",padding:"10px 8px",color:"#475569",fontWeight:500,fontSize:12}}>Trend</th>
+                    <th style={{textAlign:"center",padding:"10px 8px",color:"#8a97ab",fontWeight:500,fontSize:12}}>3-Mo Avg</th>
+                    <th style={{textAlign:"center",padding:"10px 8px",color:"#8a97ab",fontWeight:500,fontSize:12}}>Trend</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -923,7 +1047,7 @@ function App() {
                     return(
                       <tr key={p.name} className="dr-row" style={{borderBottom:"1px solid #0f1923",background:idx%2===0?"#0a1218":"#080e14"}}>
                         <td style={{padding:"9px 12px",fontWeight:500,color:"#e2e8f0",whiteSpace:"nowrap",fontSize:13}}>
-                          {p.name}{p.lowVol&&<span style={{fontSize:10,color:"#475569",marginLeft:6}}>*</span>}
+                          {p.name}{p.lowVol&&<span style={{fontSize:10,color:"#8a97ab",marginLeft:6}}>*</span>}
                         </td>
                         <td style={{padding:"9px 8px",textAlign:"center"}}>
                           <span style={{background:cfg.bg,border:`1px solid ${cfg.border}`,borderRadius:4,padding:"2px 8px",fontSize:10,color:cfg.text,fontWeight:500}}>{cfg.label}</span>
@@ -941,13 +1065,14 @@ function App() {
                 </tbody>
               </table>
             </div>
-            <div style={{marginTop:14,display:"flex",gap:20,fontSize:11,color:"#334155",flexWrap:"wrap"}}>
+            <div style={{marginTop:14,display:"flex",gap:20,fontSize:11,color:"#64748b",flexWrap:"wrap"}}>
               <span style={{color:"#4ade80"}}>■ Green ≥8%</span>
               <span style={{color:"#facc15"}}>■ Yellow 5–7.9%</span>
               <span style={{color:"#f87171"}}>■ Red &lt;5%</span>
-              <span style={{color:"#4ade80"}}>{LABEL(LATEST_FINAL)} final · {LABEL(PARTIAL_KEY)} {CODED[PARTIAL_KEY]} coded as of {DATA_ASOF}</span>
+              <span style={{color:"#4ade80"}}>{codedLabel(LATEST_FINAL)} · {codedLabel(PARTIAL_KEY)} as of {DATA_ASOF}</span>
               <span>* Low volume = volatile rate</span>
-              <span>Status & avg = last 3 final months ({LABEL(STATUS_KEYS[0]).split(" ")[0]}–{LABEL(STATUS_KEYS[2]).split(" ")[0]}) · partial months excluded</span>
+              <span>Status & 3-mo avg = mean raw CC % over {LABEL(STATUS_KEYS[0]).split(" ")[0]}–{LABEL(STATUS_KEYS[2]).split(" ")[0]} (the last three near-final or final months) · provisional month excluded</span>
+              <span>Completeness: provisional &lt;95% coded · near-final 95–98.9% · final ≥99%</span>
             </div>
           </div>
         )}
@@ -955,7 +1080,7 @@ function App() {
       </div>
 
       <div style={{borderTop:"1px solid #0f1923",padding:"14px 32px",fontSize:11,color:"#1e2a3a",textAlign:"center",lineHeight:1.6}}>
-        CritCareIQ · Physician CC rates only · APPs excluded · Revenue est. @ $162/encounter (Medicare blended) · Data through Sep 2026 (as of 10/13/26) · For QI/educational use only · Not a substitute for compliance review · Mercy Fitzgerald O52
+        CritCareIQ · Physician CC rates only · APPs excluded · Revenue figures are illustrative @ $162/CC chart (Medicare-blended increment of 99291 over 99285) · Data through Sep 2026 (provisional, as of 10/13/26) · Provisional &lt;95% coded · near-final 95–98.9% · final ≥99% · For QI/educational use only · Not a substitute for compliance review · Mercy Fitzgerald O52
       </div>
     </div>
   );
